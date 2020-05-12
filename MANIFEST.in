@@ -1,0 +1,4 @@
+recursive-include df_websockets *
+exclude .git
+include LICENSE README.md
+global-exclude __pycache__ *.pyc
