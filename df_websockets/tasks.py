@@ -131,7 +131,7 @@ by the client.
     connection.expire(redis_key, settings.WEBSOCKET_REDIS_EXPIRE)
 
 
-def scall(window_info, signal_name, to=None, **kwargs):
+def trigger(window_info, signal_name, to=None, **kwargs):
     """Shortcut to :meth:`df_websockets.tasks.call`, allowing to directly pass arguments of the signal to this function.
 Your signal cannot use `window_info`, `signal_name` and `to` as argument names.
 
@@ -146,13 +146,13 @@ These two successive calls are strictly equivalent:
         call(request, 'my.signal.name', to=[WINDOW, SERVER], kwargs={'arg1': 12, 'arg2': 'Hello'})
 
     """
-    return _call_signal(
+    return _trigger_signal(
         window_info, signal_name, to=to, kwargs=kwargs, from_client=False
     )
 
 
 # noinspection PyIncorrectDocstring
-def call(
+def trigger_signal(
     window_info,
     signal_name,
     to=None,
@@ -174,7 +174,7 @@ def call(
        it is cancelled)
     :param eta: check the Celery doc (in a nutshell: datetime of running this signal)
     """
-    return _call_signal(
+    return _trigger_signal(
         window_info,
         signal_name,
         to=to,
@@ -186,7 +186,7 @@ def call(
     )
 
 
-def _call_signal(
+def _trigger_signal(
     window_info,
     signal_name,
     to=None,

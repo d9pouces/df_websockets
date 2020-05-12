@@ -292,9 +292,10 @@ function connectSignals() {
 
 
     DFSignals.connect('html.focus', (opts) => {
-        document.querySelectorAll(opts.selector).forEach(elt => {
+        const elt = document.querySelector(opts.selector);
+        if (elt) {
             elt.focus();
-        });
+        }
     });
     /*"""
     .. function:: html.focus(opts)

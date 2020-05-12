@@ -346,9 +346,9 @@ class SignalConnection(Connection):
         REGISTERED_SIGNALS.setdefault(self.path, []).append(self)
 
     def call(self, window_info, **kwargs):
-        from df_websockets.tasks import call, SERVER
+        from df_websockets.tasks import trigger_signal, SERVER
 
-        call(window_info, self.path, to=SERVER, kwargs=kwargs)
+        trigger_signal(window_info, self.path, to=SERVER, kwargs=kwargs)
 
 
 class FunctionConnection(Connection):
@@ -393,6 +393,8 @@ def signal(
 ):
     """Decorator to use for registering a new signal.
     This decorator returns the original callable as-is.
+
+    TODO: add a special queue SYNC
     """
 
     def wrapped(fn_):

@@ -28,7 +28,7 @@ from django.http import HttpRequest, HttpResponse, QueryDict
 from django.utils.module_loading import import_string
 
 from df_websockets.middleware import WebsocketMiddleware
-from df_websockets.tasks import SERVER, _call_signal, get_websocket_redis_connection
+from df_websockets.tasks import SERVER, _trigger_signal, get_websocket_redis_connection
 from df_websockets.window_info import WindowInfo
 
 logger = logging.getLogger("df_websockets.signals")
@@ -131,7 +131,7 @@ class DFConsumer(WebsocketConsumer):
                 eta = int(msg.get("eta", 0)) or None
                 expires = int(msg.get("expires", 0)) or None
                 countdown = int(msg.get("countdown", 0)) or None
-                _call_signal(
+                _trigger_signal(
                     self.window_info,
                     signal_name,
                     to=[SERVER],
