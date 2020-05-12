@@ -75,7 +75,8 @@ SESSION = Constant("SESSION")
 WINDOW = Constant("WINDOW")
 USER = Constant("USER")
 BROADCAST = Constant("BROADCAST")
-
+# special value for the "queue" argument
+SYNC = Constant("SYNC")
 
 _signal_encoder = import_string(settings.WEBSOCKET_SIGNAL_ENCODER)
 _topic_serializer = import_string(settings.WEBSOCKET_TOPIC_SERIALIZER)
@@ -107,8 +108,6 @@ by the client.
     :param request: :class:`django.http.request.HttpRequest`
     :param topics: list of topics that will be subscribed by the websocket (can be any Python object).
     """
-    if not settings.USE_CELERY:
-        return
     # noinspection PyTypeChecker
     if not hasattr(request, "window_key"):
         raise ImproperlyConfigured("You should use the WebsocketMiddleware middleware")
@@ -239,12 +238,17 @@ def _trigger_signal(
     window_info_as_dict = None
     if window_info:
         window_info_as_dict = window_info.to_dict()
-    if celery_kwargs:
-        if serialized_client_topics:
-            queues.add(settings.CELERY_DEFAULT_QUEUE)
+
+    if celery_kwargs and serialized_client_topics:
+        celery_client_topics = serialized_client_topics
+        queues.add(settings.CELERY_DEFAULT_QUEUE)
+        to_server = True
+    else:
+        celery_client_topics = []
+    if to_server:
         for queue in queues:
             topics = (
-                serialized_client_topics
+                celery_client_topics
                 if queue == settings.CELERY_DEFAULT_QUEUE
                 else []
             )
@@ -261,25 +265,10 @@ def _trigger_signal(
                 queue=queue,
                 **celery_kwargs,
             )
-    else:
-        if to_server:
-            for queue in queues:
-                _server_signal_call.apply_async(
-                    [
-                        signal_name,
-                        window_info_as_dict,
-                        kwargs,
-                        from_client,
-                        [],
-                        to_server,
-                        queue,
-                    ],
-                    queue=queue,
-                )
-        if serialized_client_topics:
-            signal_id = str(uuid.uuid4())
-            for topic in serialized_client_topics:
-                _call_ws_signal(signal_name, signal_id, topic, kwargs)
+    if serialized_client_topics and not celery_kwargs:
+        signal_id = str(uuid.uuid4())
+        for topic in serialized_client_topics:
+            _call_ws_signal(signal_name, signal_id, topic, kwargs)
 
 
 def _call_ws_signal(signal_name, signal_id, serialized_topic, kwargs):
@@ -421,8 +410,6 @@ def _server_function_call(
 
 def get_expected_queues():
     expected_queues = set()
-    if not settings.USE_CELERY:
-        return expected_queues
     import_signals_and_functions()
     for connection in REGISTERED_FUNCTIONS.values():
         if isinstance(connection.queue, DynamicQueueName):

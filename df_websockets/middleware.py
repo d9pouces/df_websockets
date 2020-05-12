@@ -61,15 +61,15 @@ class WebsocketMiddleware(MiddlewareMixin):
             request.window_key = get_random_string(32, VALID_KEY_CHARS)
         request.has_websocket_topics = False
 
-    def process_response(self, request, response: HttpResponse):
+    def process_response(self, request: HttpRequest, response: HttpResponse):
+        # noinspection PyUnresolvedReferences
         if request.has_websocket_topics:
-            protocol = "wss" if settings.USE_SSL else "ws"
-            site_name = "%s:%s" % (settings.SERVER_NAME, settings.SERVER_PORT)
+            use_ssl = settings.scheme.endswith("s")
+            http_url = request.build_absolute_uri(settings.WEBSOCKET_URL)
+            # noinspection PyUnresolvedReferences
             window_key = request.window_key
-            ws_url = "%s://@%s%s?%s=%s" % (
-                protocol,
-                site_name,
-                settings.WEBSOCKET_URL,
+            ws_url = "ws%s?%s=%s" % (
+                http_url[4:],
                 self.ws_windowkey_get_parameter,
                 window_key,
             )
@@ -79,7 +79,7 @@ class WebsocketMiddleware(MiddlewareMixin):
                 max_age=86400,
                 domain=settings.CSRF_COOKIE_DOMAIN,
                 path=settings.CSRF_COOKIE_PATH,
-                secure=settings.USE_SSL,
+                secure=use_ssl,
                 httponly=False,
                 samesite=settings.CSRF_COOKIE_SAMESITE,
             )
@@ -89,7 +89,7 @@ class WebsocketMiddleware(MiddlewareMixin):
                 max_age=86400,
                 domain=settings.CSRF_COOKIE_DOMAIN,
                 path=settings.CSRF_COOKIE_PATH,
-                secure=settings.USE_SSL,
+                secure=use_ssl,
                 httponly=False,
                 samesite=settings.CSRF_COOKIE_SAMESITE,
             )

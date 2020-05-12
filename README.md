@@ -19,7 +19,10 @@ df_config works with:
   * django 2.0+,
   * celery 4.0+,
   * redis,
-  * django-channels 2.0+.
+  * django-channels 2.0+,
+  * channels_redis.
+
+You also need a working [redis server](https://redis.io) and [Celery setup](https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html).
 
 ```bash
 pip install df_websockets
@@ -30,8 +33,17 @@ In your settings, if you do not use `df_config`, you must add the following valu
 ASGI_APPLICATION = "df_websockets.routing.application"
 MIDDLEWARES = [..., "df_websockets.middleware.WebsocketMiddleware", ...]
 CELERY_APP = "df_websockets"
+CELERY_DEFAULT_QUEUE = "celery"
+WEBSOCKET_REDIS_CONNECTION = {'host': 'localhost', 'port': 6379, 'db': 3, 'password': ''}
+WEBSOCKET_REDIS_EXPIRE = 36000
+WEBSOCKET_REDIS_PREFIX = "ws"
+WEBSOCKET_SIGNAL_DECODER = "json.JSONDecoder"
+WEBSOCKET_SIGNAL_ENCODER = "django.core.serializers.json.DjangoJSONEncoder"
 WEBSOCKET_TOPIC_SERIALIZER = "df_websockets.topics.serialize_topic"
+WINDOW_INFO_MIDDLEWARES = ["df_websockets.ws_middleware.WindowKeyMiddleware", "df_websockets.ws_middleware.DjangoAuthMiddleware", "df_websockets.ws_middleware.Djangoi18nMiddleware", "df_websockets.ws_middleware.BrowserMiddleware",]
+WEBSOCKET_URL = "/ws/"
 ```
+If you use `df_config` and you use a local Redis, you have nothing to do: settings are automatically set.
 
 basic usage
 -----------

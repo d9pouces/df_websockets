@@ -14,10 +14,22 @@
 #                                                                              #
 # ##############################################################################
 
-
-def load_celery():
-    """ Import Celery application unless Celery is disabled.
-    Allow to automatically load tasks
-    """
-    from df_websockets.celery import app
-    return app
+for name, default in (
+        ("CELERY_APP", "df_websockets"),
+        ("CELERY_DEFAULT_QUEUE", "celery"),
+        ("WEBSOCKET_REDIS_CONNECTION", {'host': 'localhost', 'port': 6379, 'db': 3, 'password': ''}),
+        ("WEBSOCKET_REDIS_EXPIRE", 36000),
+        ("WEBSOCKET_REDIS_PREFIX", "ws"),
+        ("WEBSOCKET_SIGNAL_DECODER", "json.JSONDecoder"),
+        ("WEBSOCKET_SIGNAL_ENCODER", "django.core.serializers.json.DjangoJSONEncoder"),
+        ("WEBSOCKET_TOPIC_SERIALIZER", "df_websockets.topics.serialize_topic"),
+        ("WINDOW_INFO_MIDDLEWARES", [
+            "df_websockets.ws_middleware.WindowKeyMiddleware",
+            "df_websockets.ws_middleware.DjangoAuthMiddleware",
+            "df_websockets.ws_middleware.Djangoi18nMiddleware",
+            "df_websockets.ws_middleware.BrowserMiddleware",
+        ]),
+        ("WEBSOCKET_URL", "/ws/"),
+        ("ASGI_APPLICATION", "df_websockets.routing.application"),
+):
+    pass
