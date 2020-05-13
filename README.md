@@ -57,8 +57,7 @@ If you use `df_config` and you use a local Redis, you have nothing to do: settin
 You can start a Celery worker and the development server:
 ```bash
 python manage.py worker 
-python manage.py runserver
-
+python manage.py runserver -Q celery,slow,fast
 ```
 
 basic usage
@@ -92,6 +91,10 @@ document.addEventListener("DOMContentLoaded", () => {
 ```
 
 Now, we can trigger this signal to call this functions.
+In both cases, both functions will be called on the server and in the browser window.
+```javascript
+DFSignals.call('myproject.first_signal', {content: "Hello from browser"});
+```
 
 ```python
 from df_websockets.tasks import WINDOW, trigger, SERVER
@@ -105,9 +108,54 @@ def any_view(request):  # this is a standard Django view
 @signal(path="myproject.second_signal", is_allowed_to=everyone, queue="slow")
 def second_signal(window_info):
     trigger(window_info, 'myproject.first_signal', to=[SERVER, WINDOW], content="hello from Celery")
-
 ```
 
-```javascript
-DFSignals.call('myproject.first_signal', {content: "Hello from browser"});
+In this case, the `to` parameter targets both the server and the window.
+
+
+topics
+------
+
+When the server triggers a signal, it can select if the signal is called on the server or on some browser windows.
+
+A Django view using this signal system must call `set_websocket_topics` to add some ”topics” to this view.
+`js/df_websockets.min.js` must also be added to the resulting HTML. 
+
 ```
+from df_websockets.tasks import set_websocket_topics
+
+def any_view(request):  # this is a standard Django view
+    # useful code
+    obj1 = MyModel.objects.get(id=42)
+    set_websocket_topics(request, [obj1, obj2, obj3])
+    return HttpResponse()
+```
+
+`obj1`, `obj2`, `obj3` must be Python objects that are handled by the `WEBSOCKET_TOPIC_SERIALIZER` function. By default, any string and Django model are valid.
+Each window also has a unique identifier that is automatically added to this list, as well as the connected user id and the `BROADCAST`.
+
+The following code will call the JS function on every browser window having the `obj` topic and to the displayed window.
+```python
+from df_websockets.tasks import WINDOW, trigger
+from df_websockets.tasks import set_websocket_topics
+
+def another_view(request, obj_id):
+    obj = MyModel.objects.get(id=42)
+    trigger(request, 'myproject.first_signal', to=[WINDOW, obj], content="hello from a view")
+    set_websocket_topics(request, [other_topics])
+    return HttpResponse()
+```
+
+There are three special values:
+
+* `df_websockets.tasks.WINDOW`: the original browser window,
+* `df_websockets.tasks.USER`: all windows currently displayed by the connected user,
+* `df_websockets.tasks.BROADCAST`: all windows currently active.
+
+Some information about the original window (like its unique identifier or the connected user) must be provided to the triggered Python code, allowing it to trigger JS events on any selected window.  
+These data are stored in the `WindowInfo` object, automatically built from the HTTP request by the trigger function and provided as first argument to the triggered code.
+The `trigger` function accepts `WindowInfo` or `HTTPRequest` objects as first argument.
+
+
+
+ 
