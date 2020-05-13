@@ -50,7 +50,6 @@ setup(
         "channels_redis",
         "django",
         "redis",
-
     ],
     setup_requires=[],
     tests_require=["tox"],
