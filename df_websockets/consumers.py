@@ -27,19 +27,20 @@ from django.core.handlers.base import BaseHandler
 from django.http import HttpRequest, HttpResponse, QueryDict
 from django.utils.module_loading import import_string
 
+from df_websockets import ws_settings
 from df_websockets.middleware import WebsocketMiddleware
 from df_websockets.tasks import SERVER, _trigger_signal, get_websocket_redis_connection
 from df_websockets.window_info import WindowInfo
 
 logger = logging.getLogger("df_websockets.signals")
-_signal_encoder = import_string(settings.WEBSOCKET_SIGNAL_ENCODER)
-topic_serializer = import_string(settings.WEBSOCKET_TOPIC_SERIALIZER)
-signal_decoder = import_string(settings.WEBSOCKET_SIGNAL_DECODER)
+_signal_encoder = import_string(ws_settings.WEBSOCKET_SIGNAL_ENCODER)
+topic_serializer = import_string(ws_settings.WEBSOCKET_TOPIC_SERIALIZER)
+signal_decoder = import_string(ws_settings.WEBSOCKET_SIGNAL_DECODER)
 
 
 def get_websocket_topics(request: Union[HttpRequest, WindowInfo]):
     # noinspection PyUnresolvedReferences
-    redis_key = "%s%s" % (settings.WEBSOCKET_REDIS_PREFIX, request.window_key)
+    redis_key = "%s%s" % (ws_settings.WEBSOCKET_REDIS_PREFIX, request.window_key)
     connection = get_websocket_redis_connection()
     topics = connection.lrange(redis_key, 0, -1)
     return [x.decode("utf-8") for x in topics]

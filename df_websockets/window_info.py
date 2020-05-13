@@ -41,8 +41,11 @@ from django.template.loader import render_to_string as raw_render_to_string
 from django.utils.module_loading import import_string
 
 __author__ = "Matthieu Gallet"
+
+from df_websockets import ws_settings
+
 logger = logging.getLogger("df_websockets.signals")
-middlewares = [import_string(x)() for x in settings.WINDOW_INFO_MIDDLEWARES]
+middlewares = [import_string(x)() for x in ws_settings.WINDOW_INFO_MIDDLEWARES]
 
 
 class Session:

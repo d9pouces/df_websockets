@@ -17,8 +17,9 @@ import os
 import sys
 
 from celery.bin.celery import main as celery_main
-from django.conf import settings
 from django.core.management import BaseCommand
+
+from df_websockets import ws_settings
 
 
 class Command(BaseCommand):
@@ -27,7 +28,7 @@ class Command(BaseCommand):
     help = "Manage workers and inspect queues"
 
     def run_from_argv(self, argv):
-        os.environ.setdefault("CELERY_APP", settings.CELERY_APP)
+        os.environ.setdefault("CELERY_APP", ws_settings.CELERY_APP)
         sys.argv.pop(0)
         celery_main(sys.argv)
 

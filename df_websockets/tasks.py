@@ -43,6 +43,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.module_loading import import_string
 from redis import ConnectionPool, StrictRedis
 
+from df_websockets import ws_settings
 from df_websockets.decorators import (
     DynamicQueueName,
     FunctionConnection,
@@ -78,17 +79,17 @@ BROADCAST = Constant("BROADCAST")
 # special value for the "queue" argument
 SYNC = Constant("SYNC")
 
-_signal_encoder = import_string(settings.WEBSOCKET_SIGNAL_ENCODER)
-_topic_serializer = import_string(settings.WEBSOCKET_TOPIC_SERIALIZER)
+_signal_encoder = import_string(ws_settings.WEBSOCKET_SIGNAL_ENCODER)
+_topic_serializer = import_string(ws_settings.WEBSOCKET_TOPIC_SERIALIZER)
 
 __values = {
-    "host": settings.WEBSOCKET_REDIS_HOST,
-    "port": ":%s" % settings.WEBSOCKET_REDIS_PORT
-    if settings.WEBSOCKET_REDIS_PORT
+    "host": settings.WEBSOCKET_REDIS_CONNECTION["host"],
+    "port": ":%s" % settings.WEBSOCKET_REDIS_CONNECTION["port"]
+    if settings.WEBSOCKET_REDIS_CONNECTION["port"]
     else "",
-    "db": settings.WEBSOCKET_REDIS_DB,
-    "password": ":%s@" % settings.WEBSOCKET_REDIS_PASSWORD
-    if settings.WEBSOCKET_REDIS_PASSWORD
+    "db": settings.WEBSOCKET_REDIS_CONNECTION["db"],
+    "password": ":%s@" % settings.WEBSOCKET_REDIS_CONNECTION["password"]
+    if settings.WEBSOCKET_REDIS_CONNECTION["password"]
     else "",
 }
 redis_connection_pool = ConnectionPool.from_url(
@@ -113,7 +114,7 @@ by the client.
         raise ImproperlyConfigured("You should use the WebsocketMiddleware middleware")
     token = request.window_key
     request.has_websocket_topics = True
-    prefix = settings.WEBSOCKET_REDIS_PREFIX
+    prefix = ws_settings.WEBSOCKET_REDIS_PREFIX
     request = WindowInfo.from_request(request)
     topic_strings = {_topic_serializer(request, x) for x in topics if x is not SERVER}
     # noinspection PyUnresolvedReferences,PyTypeChecker
@@ -127,7 +128,7 @@ by the client.
     for topic in topic_strings:
         if topic is not None:
             connection.rpush(redis_key, prefix + topic)
-    connection.expire(redis_key, settings.WEBSOCKET_REDIS_EXPIRE)
+    connection.expire(redis_key, ws_settings.WEBSOCKET_REDIS_EXPIRE)
 
 
 def trigger(window_info, signal_name, to=None, **kwargs):
@@ -241,7 +242,7 @@ def _trigger_signal(
 
     if celery_kwargs and serialized_client_topics:
         celery_client_topics = serialized_client_topics
-        queues.add(settings.CELERY_DEFAULT_QUEUE)
+        queues.add(ws_settings.CELERY_DEFAULT_QUEUE)
         to_server = True
     else:
         celery_client_topics = []
@@ -249,7 +250,7 @@ def _trigger_signal(
         for queue in queues:
             topics = (
                 celery_client_topics
-                if queue == settings.CELERY_DEFAULT_QUEUE
+                if queue == ws_settings.CELERY_DEFAULT_QUEUE
                 else []
             )
             _server_signal_call.apply_async(
@@ -277,7 +278,7 @@ def _call_ws_signal(signal_name, signal_id, serialized_topic, kwargs):
         cls=_signal_encoder,
     )
 
-    topic = settings.WEBSOCKET_REDIS_PREFIX + serialized_topic
+    topic = ws_settings.WEBSOCKET_REDIS_PREFIX + serialized_topic
 
     channel_layer = get_channel_layer(DEFAULT_CHANNEL_LAYER)
     logger.debug("send message to topic %r" % topic)
@@ -297,7 +298,7 @@ def _return_ws_function_result(window_info, result_id, result, exception=None):
     serialized_message = json.dumps(json_msg, cls=_signal_encoder)
     serialized_topic = _topic_serializer(window_info, WINDOW)
     if serialized_topic:
-        topic = settings.WEBSOCKET_REDIS_PREFIX + serialized_topic
+        topic = ws_settings.WEBSOCKET_REDIS_PREFIX + serialized_topic
         logger.debug("send function result to topic %r" % topic)
         connection.publish(topic, serialized_message.encode("utf-8"))
 

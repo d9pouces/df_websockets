@@ -16,13 +16,13 @@
 
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
-from django.conf import settings
 from django.urls import path
 
+from df_websockets import ws_settings
 from df_websockets.consumers import DFConsumer
 
 websocket_urlpatterns = [
-    path(settings.WEBSOCKET_URL[1:], DFConsumer),
+    path(ws_settings.WEBSOCKET_URL[1:], DFConsumer),
 ]
 
 

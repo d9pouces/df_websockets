@@ -23,6 +23,8 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.crypto import get_random_string
 from django.utils.deprecation import MiddlewareMixin
 
+from df_websockets import ws_settings
+
 logger = logging.getLogger("django.request")
 
 
@@ -65,7 +67,7 @@ class WebsocketMiddleware(MiddlewareMixin):
         # noinspection PyUnresolvedReferences
         if request.has_websocket_topics:
             use_ssl = settings.scheme.endswith("s")
-            http_url = request.build_absolute_uri(settings.WEBSOCKET_URL)
+            http_url = request.build_absolute_uri(ws_settings.WEBSOCKET_URL)
             # noinspection PyUnresolvedReferences
             window_key = request.window_key
             ws_url = "ws%s?%s=%s" % (
