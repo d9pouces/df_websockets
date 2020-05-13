@@ -54,6 +54,13 @@ WEBSOCKET_URL = "/ws/"
 ```
 If you use `df_config` and you use a local Redis, you have nothing to do: settings are automatically set and everything is working as soon as a Redis is running on your machine.
 
+You can start a Celery worker and the development server:
+```bash
+python manage.py worker 
+python manage.py runserver
+
+```
+
 basic usage
 -----------
 
