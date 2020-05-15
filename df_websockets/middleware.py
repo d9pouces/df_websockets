@@ -1,16 +1,8 @@
 # ##############################################################################
-#  This file is part of df_websockets                                          #
+#  This file is part of Interdiode                                             #
 #                                                                              #
-#  Copyright (C) 2020 Matthieu Gallet <github@19pouces.net>                    #
+#  Copyright (C) 2020 Matthieu Gallet <matthieu.gallet@19pouces.net>           #
 #  All Rights Reserved                                                         #
-#                                                                              #
-#  You may use, distribute and modify this code under the                      #
-#  terms of the (BSD-like) CeCILL-B license.                                   #
-#                                                                              #
-#  You should have received a copy of the CeCILL-B license with                #
-#  this file. If not, please visit:                                            #
-#  https://cecill.info/licences/Licence_CeCILL-B_V1-en.txt (English)           #
-#  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
 #                                                                              #
 # ##############################################################################
 import logging
@@ -66,8 +58,8 @@ class WebsocketMiddleware(MiddlewareMixin):
     def process_response(self, request: HttpRequest, response: HttpResponse):
         # noinspection PyUnresolvedReferences
         if request.has_websocket_topics:
-            use_ssl = settings.scheme.endswith("s")
             http_url = request.build_absolute_uri(ws_settings.WEBSOCKET_URL)
+            use_ssl = request.scheme.endswith("s")
             # noinspection PyUnresolvedReferences
             window_key = request.window_key
             ws_url = "ws%s?%s=%s" % (

@@ -1,16 +1,8 @@
 # ##############################################################################
-#  This file is part of df_websockets                                          #
+#  This file is part of Interdiode                                             #
 #                                                                              #
-#  Copyright (C) 2020 Matthieu Gallet <github@19pouces.net>                    #
+#  Copyright (C) 2020 Matthieu Gallet <matthieu.gallet@19pouces.net>           #
 #  All Rights Reserved                                                         #
-#                                                                              #
-#  You may use, distribute and modify this code under the                      #
-#  terms of the (BSD-like) CeCILL-B license.                                   #
-#                                                                              #
-#  You should have received a copy of the CeCILL-B license with                #
-#  this file. If not, please visit:                                            #
-#  https://cecill.info/licences/Licence_CeCILL-B_V1-en.txt (English)           #
-#  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
 #                                                                              #
 # ##############################################################################
 
@@ -22,7 +14,7 @@ Use these functions for:
 
   * setting websocket channels allowed for a given :class:`django.http.response.HttpResponse`,
   * calling signals, with a full function (:meth:`df_websockets.tasks.call`) and a
-    shortcut (:meth:`df_websockets.tasks.scall`)
+    shortcut (:meth:`df_websockets.tasks.trigger`)
 
 """
 
@@ -139,11 +131,11 @@ These two successive calls are strictly equivalent:
 
 .. code-block:: python
 
-    from df_websockets.tasks import call, scall, WINDOW, SERVER
+    from df_websockets.tasks import call, trigger, WINDOW, SERVER
 
     def my_python_view(request):
-        scall(request, 'my.signal.name', to=[WINDOW, SERVER], arg1=12, arg2='Hello')
-        call(request, 'my.signal.name', to=[WINDOW, SERVER], kwargs={'arg1': 12, 'arg2': 'Hello'})
+        trigger(request, 'my.signal.name', to=[WINDOW, SERVER], arg1=12, arg2='Hello')
+        trigger_signal(request, 'my.signal.name', to=[WINDOW, SERVER], kwargs={'arg1': 12, 'arg2': 'Hello'})
 
     """
     return _trigger_signal(
