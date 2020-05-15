@@ -5,10 +5,12 @@
 #  All Rights Reserved                                                         #
 #                                                                              #
 # ##############################################################################
+import base64
 import io
 import mimetypes
 import os
 import re
+from typing import Union
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import QueryDict
@@ -139,7 +141,7 @@ class SerializedForm:
             name = obj["name"]
             value = obj["value"]
             if name in self.form_cls.base_fields and isinstance(
-                self.form_cls.base_fields[name], FileField
+                    self.form_cls.base_fields[name], FileField
             ):
                 mimetypes.init()
                 basename = os.path.basename(value)
@@ -157,3 +159,9 @@ class SerializedForm:
             else:
                 post_data.update({name: value})
         return self.form_cls(post_data, file_data, *args, **kwargs)
+
+
+def valid_topic_name(x: Union[str, bytes]) -> str:
+    if isinstance(x, str):
+        x = x.encode("utf-8")
+    return base64.b32encode(x).decode().replace("=", "-")

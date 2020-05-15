@@ -1,19 +1,10 @@
 # ##############################################################################
-#  This file is part of df_websockets                                          #
+#  This file is part of Interdiode                                             #
 #                                                                              #
-#  Copyright (C) 2020 Matthieu Gallet <github@19pouces.net>                    #
+#  Copyright (C) 2020 Matthieu Gallet <matthieu.gallet@19pouces.net>           #
 #  All Rights Reserved                                                         #
 #                                                                              #
-#  You may use, distribute and modify this code under the                      #
-#  terms of the (BSD-like) CeCILL-B license.                                   #
-#                                                                              #
-#  You should have received a copy of the CeCILL-B license with                #
-#  this file. If not, please visit:                                            #
-#  https://cecill.info/licences/Licence_CeCILL-B_V1-en.txt (English)           #
-#  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
-#                                                                              #
 # ##############################################################################
-
 import json
 import logging
 from functools import lru_cache
@@ -21,16 +12,15 @@ from typing import Optional, Union
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-from django import http
-from django.conf import settings
-from django.core.handlers.base import BaseHandler
-from django.http import HttpRequest, HttpResponse, QueryDict
-from django.utils.module_loading import import_string
-
 from df_websockets import ws_settings
 from df_websockets.middleware import WebsocketMiddleware
 from df_websockets.tasks import SERVER, _trigger_signal, get_websocket_redis_connection
+from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
+from django import http
+from django.core.handlers.base import BaseHandler
+from django.http import HttpRequest, HttpResponse, QueryDict
+from django.utils.module_loading import import_string
 
 logger = logging.getLogger("df_websockets.signals")
 _signal_encoder = import_string(ws_settings.WEBSOCKET_SIGNAL_ENCODER)
@@ -43,7 +33,7 @@ def get_websocket_topics(request: Union[HttpRequest, WindowInfo]):
     redis_key = "%s%s" % (ws_settings.WEBSOCKET_REDIS_PREFIX, request.window_key)
     connection = get_websocket_redis_connection()
     topics = connection.lrange(redis_key, 0, -1)
-    return [x.decode("utf-8") for x in topics]
+    return [valid_topic_name(x) for x in topics]
 
 
 class WebsocketHandler(BaseHandler):

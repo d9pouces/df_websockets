@@ -17,7 +17,8 @@ Use these functions for:
     shortcut (:meth:`df_websockets.tasks.trigger`)
 
 """
-
+import base64
+import hashlib
 import json
 import logging
 import os
@@ -29,6 +30,7 @@ from asgiref.sync import async_to_sync
 from celery import shared_task
 from channels import DEFAULT_CHANNEL_LAYER
 from channels.layers import get_channel_layer
+from df_websockets.utils import valid_topic_name
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -269,14 +271,13 @@ def _call_ws_signal(signal_name, signal_id, serialized_topic, kwargs):
         {"signal": signal_name, "opts": kwargs, "signal_id": signal_id},
         cls=_signal_encoder,
     )
-
     topic = ws_settings.WEBSOCKET_REDIS_PREFIX + serialized_topic
-
     channel_layer = get_channel_layer(DEFAULT_CHANNEL_LAYER)
     logger.debug("send message to topic %r" % topic)
+    topic_b64 = valid_topic_name(topic)
     # noinspection PyTypeChecker
     async_to_sync(channel_layer.group_send)(
-        topic, {"type": "ws_message", "message": serialized_message},
+        topic_b64, {"type": "ws_message", "message": serialized_message},
     )
 
 
