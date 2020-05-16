@@ -5,7 +5,7 @@
 #  All Rights Reserved                                                         #
 #                                                                              #
 # ##############################################################################
-import base64
+import hashlib
 import io
 import mimetypes
 import os
@@ -164,4 +164,4 @@ class SerializedForm:
 def valid_topic_name(x: Union[str, bytes]) -> str:
     if isinstance(x, str):
         x = x.encode("utf-8")
-    return base64.b32encode(x).decode().replace("=", "-")
+    return hashlib.sha256(x).hexdigest()

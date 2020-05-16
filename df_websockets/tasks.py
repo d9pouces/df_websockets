@@ -274,10 +274,10 @@ def _call_ws_signal(signal_name, signal_id, serialized_topic, kwargs):
     topic = ws_settings.WEBSOCKET_REDIS_PREFIX + serialized_topic
     channel_layer = get_channel_layer(DEFAULT_CHANNEL_LAYER)
     logger.debug("send message to topic %r" % topic)
-    topic_b64 = valid_topic_name(topic)
+    topic_valid = valid_topic_name(topic)
     # noinspection PyTypeChecker
     async_to_sync(channel_layer.group_send)(
-        topic_b64, {"type": "ws_message", "message": serialized_message},
+        topic_valid, {"type": "ws_message", "message": serialized_message},
     )
 
 
