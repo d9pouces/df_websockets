@@ -15,9 +15,7 @@ DFSignals = {
 
 function getCookie(cname) {
     const name = cname + "=";
-    console.info(document.cookie);
     const decodedCookie = decodeURIComponent(document.cookie);
-    console.info(decodedCookie);
     const ca = decodedCookie.split(';');
     for (let i = 0; i < ca.length; i++) {
         let c = ca[i];
@@ -34,9 +32,7 @@ function getCookie(cname) {
 function websocketConnect() {
     if (DFSignals.wsurl === null) {
         const dfWsURL = getCookie("dfwsurl");
-        console.info(dfWsURL);
         DFSignals.wsurl = decodeURIComponent(dfWsURL);
-        console.warn(DFSignals.wsurl);
     }
     const connection = new WebSocket(DFSignals.wsurl);
     /* cannot use header or cookies (cookies may change after the initial connection)
