@@ -34,6 +34,7 @@ setup(
     version=version,
     description="Smart default settings for Django websites",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Matthieu Gallet",
     author_email="github@19pouces.net",
     license="CeCILL-B",
