@@ -34,6 +34,9 @@ function websocketConnect() {
         const dfWsURL = getCookie("dfwsurl");
         DFSignals.wsurl = decodeURIComponent(dfWsURL);
     }
+    if (!DFSignals.wsurl) {
+        return;
+    }
     const connection = new WebSocket(DFSignals.wsurl);
     /* cannot use header or cookies (cookies may change after the initial connection)
     *  so we use GET parameter
