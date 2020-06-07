@@ -50,6 +50,7 @@ setup(
         "channels",
         "channels_redis",
         "django",
+        "pyasn1>=0.4.8",
         "redis",
     ],
     setup_requires=[],
