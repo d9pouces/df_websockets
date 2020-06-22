@@ -20,7 +20,7 @@ CELERY_DEFAULT_QUEUE = getattr(settings, "CELERY_DEFAULT_QUEUE", "celery")
 WEBSOCKET_REDIS_CONNECTION = getattr(
     settings,
     "WEBSOCKET_REDIS_CONNECTION",
-    {"host": "localhost", "port": 6379, "db": 3, "password": ""},
+    {"host": "localhost", "port": 6379, "db": 3, "password": None},
 )
 WEBSOCKET_REDIS_EXPIRE = getattr(settings, "WEBSOCKET_REDIS_EXPIRE", 36000)
 WEBSOCKET_REDIS_PREFIX = getattr(settings, "WEBSOCKET_REDIS_PREFIX", "ws")
