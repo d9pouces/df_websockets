@@ -14,6 +14,7 @@
 #                                                                              #
 # ##############################################################################
 import logging
+from typing import Dict, Any
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -31,22 +32,38 @@ logger = logging.getLogger("df_websockets.signals")
 class WindowInfoMiddleware:
     """Base class for the WindowInfo middlewares."""
 
-    def from_request(self, request, window_info):
+    def from_request(self, request: HttpRequest, window_info):
+        """add attributes to a window_info instance created from a HttpRequest"""
         pass
 
     def new_window_info(self, window_info):
+        """add attributes to a plain new window_info instance"""
         pass
 
-    def to_dict(self, window_info):
+    def to_dict(self, window_info) -> Dict[str, Any]:
+        """serialize some window_info attributes as a dict"""
         return {}
 
-    def from_dict(self, window_info, values):
+    def from_dict(self, window_info, values: Dict[str, Any]):
+        """
+        update a newly-created window_info instance with data stored in `values`.
+        used for deserializing a previously serialized window_info object.
+
+        :param window_info: WindowInfo instance to update
+        :param values: a dict representing a serialized window_info
+        :return:
+        """
         pass
 
     def get_context(self, window_info):
+        """get context variables from the window_info instance.
+        used in :meth:`df_websockets.window_info:render_to_string`
+        """
         return {}
 
     def install_methods(self, window_info_cls):
+        """add new methods to the WindowInfo class.
+        Used for adding methods related to the user management"""
         pass
 
 

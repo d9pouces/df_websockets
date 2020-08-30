@@ -43,7 +43,7 @@ def serialize_topic(window_info, obj):
     elif isinstance(obj, type):
         return "-<%s>" % obj.__name__
     elif isinstance(obj, Model):
-        # noinspection PyProtectedMember
+        # noinspection PyProtectedMember,PyUnresolvedReferences
         meta = obj._meta
         return "-%s.%s.%s" % (meta.app_label, meta.model_name, obj.pk or 0)
     elif obj is USER:

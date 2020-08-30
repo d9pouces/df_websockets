@@ -49,27 +49,30 @@ The registered Python code can use py3 annotation for specifying data types.
 """
 
 # ##############################################################################
-#  This file is part of Interdiode                                             #
+#  This file is part of df_websockets                                          #
 #                                                                              #
-#  Copyright (C) 2020 Matthieu Gallet <matthieu.gallet@19pouces.net>           #
+#  Copyright (C) 2020 Matthieu Gallet <github@19pouces.net>                    #
 #  All Rights Reserved                                                         #
+#                                                                              #
+#  You may use, distribute and modify this code under the                      #
+#  terms of the (BSD-like) CeCILL-B license.                                   #
+#                                                                              #
+#  You should have received a copy of the CeCILL-B license with                #
+#  this file. If not, please visit:                                            #
+#  https://cecill.info/licences/Licence_CeCILL-B_V1-en.txt (English)           #
+#  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
 #                                                                              #
 # ##############################################################################
 
-import io
 import logging
-import mimetypes
-import os
 import random
 import re
 from inspect import signature
 
+from django import forms
+
 from df_websockets import ws_settings
 from df_websockets.utils import SerializedForm
-from django import forms
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.forms import FileField
-from django.http import QueryDict
 
 logger = logging.getLogger("df_websockets.signals")
 

@@ -36,7 +36,6 @@ Designed to be instanciated from a :class:`django.http.request.HttpRequest` and 
 
 import logging
 
-from django.conf import settings
 from django.template.loader import render_to_string as raw_render_to_string
 from django.utils.module_loading import import_string
 

@@ -39,14 +39,13 @@ class Command(BaseCommand):
     def run_from_argv(self, argv):
         os.environ.setdefault("CELERY_APP", ws_settings.CELERY_APP)
         if settings.DEBUG and "-h" not in sys.argv:
-            if "-c" not in sys.argv and "--pool" not in sys.argv and "-P" not in sys.argv and "--concurrency" not in sys.argv:
+            if not any(x in sys.argv for x in ("-c", "--concurrency", "-P", "--pool")):
                 sys.argv += ["-c", "1", "--pool", "solo"]
-            if callable(run_with_reloader):
-                run_with_reloader(celery_main, sys.argv)
-            elif callable(python_reloader):
-                python_reloader(celery_main, (sys.argv,), {})
-        else:
-            celery_main(sys.argv)
+                if callable(run_with_reloader):
+                    return run_with_reloader(celery_main, sys.argv)
+                elif callable(python_reloader):
+                    return python_reloader(celery_main, (sys.argv,), {})
+        celery_main(sys.argv)
 
     def handle(self, *args, **options):
         pass
