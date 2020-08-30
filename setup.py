@@ -49,6 +49,7 @@ setup(
         "celery",
         "channels",
         "channels_redis",
+        "df_config",
         "django",
         "pyasn1>=0.4.8",
         "redis",

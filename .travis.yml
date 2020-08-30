@@ -8,4 +8,4 @@ python:
 install:
     - python setup.py develop
 script:
-    - python manage.py test
+    - python setup.py test
