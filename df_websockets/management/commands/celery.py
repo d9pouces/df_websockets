@@ -30,7 +30,7 @@ class Command(BaseCommand):
     def run_from_argv(self, argv):
         os.environ.setdefault("CELERY_APP", ws_settings.CELERY_APP)
         sys.argv.pop(0)
-        celery_main(sys.argv)
+        celery_main()
 
     def handle(self, *args, **options):
         pass
