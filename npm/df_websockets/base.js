@@ -17,7 +17,7 @@
 function connectSignals() {
 
     // noinspection ES6ModulesDependencies
-    DFSignals.connect('html.add_class', opts => {
+    window.DFSignals.connect('html.add_class', opts => {
         document.querySelectorAll(opts.selector).forEach(elt => {
             // noinspection JSUnresolvedVariable
             elt.classList.add(opts.class_name)
@@ -30,14 +30,14 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.add_class', {selector: "#obj", class_name: "myclass"});
+            window.DFSignals.call('html.add_class', {selector: "#obj", class_name: "myclass"});
 
         :param string selector: jQuery selector
         :param string class_name: new class
 
     */
 
-    DFSignals.connect('html.after', opts => {
+    window.DFSignals.connect('html.after', opts => {
         document.querySelectorAll(opts.selector).forEach(elt => {
             elt.insertAdjacentElement('afterend', opts.content)
         });
@@ -49,14 +49,14 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.after', {selector: "#obj", content: "<span>hello</span>"});
+            window.DFSignals.call('html.after', {selector: "#obj", content: "<span>hello</span>"});
 
         :param string selector: jQuery selector
         :param string content: new HTML content
 
     */
 
-    DFSignals.connect('html.append', opts => {
+    window.DFSignals.connect('html.append', opts => {
         document.querySelectorAll(opts.selector).forEach(elt => {
             elt.append(opts.content)
         });
@@ -68,14 +68,14 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.append', {selector: "#obj", content: "<span>hello</span>"});
+            window.DFSignals.call('html.append', {selector: "#obj", content: "<span>hello</span>"});
 
         :param string selector: jQuery selector
         :param string content: new HTML content
 
     */
 
-    DFSignals.connect('html.before', opts => {
+    window.DFSignals.connect('html.before', opts => {
         document.querySelectorAll(opts.selector).forEach(elt => {
             elt.insertAdjacentElement('beforebegin', opts.content)
         });
@@ -87,14 +87,14 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.before', {selector: "#obj", content: "<span>hello</span>"});
+            window.DFSignals.call('html.before', {selector: "#obj", content: "<span>hello</span>"});
 
         :param string selector: jQuery selector
         :param string content: new HTML content
 
     */
 
-    DFSignals.connect('html.empty', opts => {
+    window.DFSignals.connect('html.empty', opts => {
         document.querySelectorAll(opts.selector).forEach(elt => {
             while (elt.firstChild) {
                 elt.removeChild(elt.firstChild);
@@ -108,13 +108,13 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.empty', {selector: "#obj"});
+            window.DFSignals.call('html.empty', {selector: "#obj"});
 
         :param string selector: jQuery selector
 
     */
 
-    DFSignals.connect('html.prepend', opts => {
+    window.DFSignals.connect('html.prepend', opts => {
         document.querySelectorAll(opts.selector).forEach(elt => {
             elt.insertBefore(opts.content, parent.firstChild);
         });
@@ -126,14 +126,14 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.prepend', {selector: "#obj", content: "<span>hello</span>"});
+            window.DFSignals.call('html.prepend', {selector: "#obj", content: "<span>hello</span>"});
 
         :param string selector: jQuery selector
         :param string content: new HTML content
 
     */
 
-    DFSignals.connect('html.remove', opts => {
+    window.DFSignals.connect('html.remove', opts => {
         document.querySelectorAll(opts.selector).forEach(elt => {
             elt.parentNode.removeChild(elt)
         });
@@ -145,12 +145,12 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.remove', {selector: "#obj"});
+            window.DFSignals.call('html.remove', {selector: "#obj"});
 
         :param string selector: jQuery selector
 
     */
-    DFSignals.connect('html.remove_attr', (opts) => {
+    window.DFSignals.connect('html.remove_attr', (opts) => {
         document.querySelectorAll(opts.selector).forEach(elt => {
             // noinspection JSUnresolvedVariable
             elt.removeAttribute(opts.attr_name);
@@ -163,13 +163,13 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.remove_attr', {selector: "#obj", attr_name: "attr"});
+            window.DFSignals.call('html.remove_attr', {selector: "#obj", attr_name: "attr"});
 
         :param string selector: jQuery selector
         :param string attr_name: attribute to remove
 
     */
-    DFSignals.connect('html.remove_class', (opts) => {
+    window.DFSignals.connect('html.remove_class', (opts) => {
         document.querySelectorAll(opts.selector).forEach(elt => {
             // noinspection JSUnresolvedVariable
             elt.classList.remove(opts.class_name);
@@ -182,13 +182,13 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.remove_class', {selector: "#obj", class_name: "class"});
+            window.DFSignals.call('html.remove_class', {selector: "#obj", class_name: "class"});
 
         :param string selector: jQuery selector
         :param string class_name: class to remove
 
     */
-    DFSignals.connect('html.replace_with', (opts) => {
+    window.DFSignals.connect('html.replace_with', (opts) => {
         document.querySelectorAll(opts.selector).forEach(elt => {
             elt.outerHTML = opts.content;
         });
@@ -200,14 +200,14 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.replace_with', {selector: "#obj", content: "<span>hello</span>"});
+            window.DFSignals.call('html.replace_with', {selector: "#obj", content: "<span>hello</span>"});
 
         :param string selector: jQuery selector
         :param string content: new HTML content
 
     */
 
-    DFSignals.connect('html.add_attribute', (opts) => {
+    window.DFSignals.connect('html.add_attribute', (opts) => {
         document.querySelectorAll(opts.selector).forEach(elt => {
             // noinspection JSUnresolvedVariable
             elt.setAttribute(opts.attr_name, opts.attr_value);
@@ -220,14 +220,14 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.after', {selector: "#obj", content: "<span>hello</span>"});
+            window.DFSignals.call('html.after', {selector: "#obj", content: "<span>hello</span>"});
 
         :param string selector: jQuery selector
         :param string content: new HTML content
 
     */
 
-    DFSignals.connect('html.content', (opts) => {
+    window.DFSignals.connect('html.content', (opts) => {
         document.querySelectorAll(opts.selector).forEach(elt => {
             elt.innerHTML = opts.content;
         });
@@ -239,14 +239,14 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.content', {selector: "#obj", content: "<span>hello</span>"});
+            window.DFSignals.call('html.content', {selector: "#obj", content: "<span>hello</span>"});
 
         :param string selector: jQuery selector
         :param string content: new HTML content
     */
 
 
-    DFSignals.connect('html.text', (opts) => {
+    window.DFSignals.connect('html.text', (opts) => {
         document.querySelectorAll(opts.selector).forEach(elt => {
             elt.textContent = opts.content;
         });
@@ -258,7 +258,7 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.text', {selector: "#obj", content: "<span>hello</span>"});
+            window.DFSignals.call('html.text', {selector: "#obj", content: "<span>hello</span>"});
 
 
         :param string selector: jQuery selector
@@ -266,7 +266,7 @@ function connectSignals() {
 
     */
 
-    DFSignals.connect('html.download_file', (opts) => {
+    window.DFSignals.connect('html.download_file', (opts) => {
         /*"""
         .. function:: html.download_file(opts)
 
@@ -274,7 +274,7 @@ function connectSignals() {
 
             .. code-block:: javascript
 
-                DFSignals.call('html.download_file', {url: "http://example.org/test.zip", filename: "test.zip"});
+                window.DFSignals.call('html.download_file', {url: "http://example.org/test.zip", filename: "test.zip"});
 
 
             :param string url: URL of the file
@@ -291,7 +291,7 @@ function connectSignals() {
     });
 
 
-    DFSignals.connect('html.focus', (opts) => {
+    window.DFSignals.connect('html.focus', (opts) => {
         const elt = document.querySelector(opts.selector);
         if (elt) {
             elt.focus();
@@ -304,7 +304,7 @@ function connectSignals() {
 
         .. code-block:: javascript
 
-            DFSignals.call('html.focus', {selector: "#obj"});
+            window.DFSignals.call('html.focus', {selector: "#obj"});
 
         :param string selector: jQuery selector
 

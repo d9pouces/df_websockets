@@ -28,7 +28,7 @@ df_config works with:
 You also need a working [redis server](https://redis.io) and [Celery setup](https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html).
 
 ```bash
-pip install df_websockets
+python -m pip install df_websockets
 ```
 
 In your settings, if you do not use `df_config`, you must add the following values:
@@ -84,7 +84,7 @@ def my_first_signal_slow(window_info, content=None):
 ```javascript
 /* static file "js/df_websockets.min.js" must be included first */
 document.addEventListener("DOMContentLoaded", () => {
-    DFSignals.connect('myproject.first_signal', (opts) => {
+    window.DFSignals.connect('myproject.first_signal', (opts) => {
         console.warn(opts.content);
     });
 });
@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
 Now, we can trigger this signal to call this functions.
 In both cases, both functions will be called on the server and in the browser window.
 ```javascript
-DFSignals.call('myproject.first_signal', {content: "Hello from browser"});
+window.DFSignals.call('myproject.first_signal', {content: "Hello from browser"});
 ```
 
 ```python

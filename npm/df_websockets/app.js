@@ -14,7 +14,7 @@
 //                                                                             /
 ////////////////////////////////////////////////////////////////////////////////
 
-DFSignals = {
+window.DFSignals = {
     connection: null,
     buffer: [],
     registry: {},
@@ -38,37 +38,37 @@ function getCookie(cname) {
 }
 
 function websocketConnect() {
-    if (DFSignals.wsurl === null) {
+    if (window.DFSignals.wsurl === null) {
         const dfWsURL = getCookie("dfwsurl");
-        DFSignals.wsurl = decodeURIComponent(dfWsURL);
+        window.DFSignals.wsurl = decodeURIComponent(dfWsURL);
     }
-    if (!DFSignals.wsurl) {
+    if (!window.DFSignals.wsurl) {
         return;
     }
-    const connection = new WebSocket(DFSignals.wsurl);
+    const connection = new WebSocket(window.DFSignals.wsurl);
     /* cannot use header or cookies (cookies may change after the initial connection)
     *  so we use GET parameter
     *  */
     connection.onopen = () => {
-        DFSignals.connection = connection;
-        for (let i = 0; i < DFSignals.buffer.length; i++) {
-            connection.send(DFSignals.buffer[i]);
+        window.DFSignals.connection = connection;
+        for (let i = 0; i < window.DFSignals.buffer.length; i++) {
+            connection.send(window.DFSignals.buffer[i]);
         }
-        DFSignals.buffer = [];
+        window.DFSignals.buffer = [];
     };
     connection.onmessage = (e) => {
         console.debug('received call ' + e.data + ' from server.')
         const msg = JSON.parse(e.data);
         // noinspection JSUnresolvedVariable
         if (msg.signal && msg.signal_id) {
-            DFSignals.call(msg.signal, msg.opts, msg.signal_id);
+            window.DFSignals.call(msg.signal, msg.opts, msg.signal_id);
         }
     };
     connection.onerror = (e) => {
         console.error("WS error: " + e);
     };
     connection.onclose = () => {
-        DFSignals.connection = null;
+        window.DFSignals.connection = null;
         setTimeout(websocketConnect, 3000);
     }
 }
@@ -85,28 +85,28 @@ function call(signal, opts, id) {
         :param string id: Unique id of each signal triggered by the server. Do not use it yourself.
         :returns: always `false`.
     */
-    // if (DFSignals.registry[signal] === undefined) {
+    // if (window.DFSignals.registry[signal] === undefined) {
     //     console.debug('unknown call "' + signal + '" (from both client and server).');
     //     return false;
     // } else
-    if ((id !== undefined) && (DFSignals.registry[id] !== undefined)) {
+    if ((id !== undefined) && (window.DFSignals.registry[id] !== undefined)) {
         return false;
     } else if (id !== undefined) {
-        DFSignals.registry[id] = true;
+        window.DFSignals.registry[id] = true;
     }
-    if (DFSignals.registry[signal] !== undefined) {
+    if (window.DFSignals.registry[signal] !== undefined) {
         console.debug('call "' + signal + '"', opts);
-        for (let i = 0; i < DFSignals.registry[signal].length; i += 1) {
-            DFSignals.registry[signal][i](opts, id);
+        for (let i = 0; i < window.DFSignals.registry[signal].length; i += 1) {
+            window.DFSignals.registry[signal][i](opts, id);
         }
     }
     if (id === undefined) {
         console.debug('call from client: "' + signal + '"', opts);
         const msg = JSON.stringify({signal: signal, opts: opts});
-        if (DFSignals.connection) {
-            DFSignals.connection.send(msg);
+        if (window.DFSignals.connection) {
+            window.DFSignals.connection.send(msg);
         } else {
-            DFSignals.buffer.push(msg);
+            window.DFSignals.buffer.push(msg);
         }
     }
 
@@ -123,13 +123,13 @@ function connect(signal, fn) {
         :param function fn: Function that takes a single object as argument. The properties of this object are the signal arguments.
         :returns: nothing.
     */
-    if (DFSignals.registry[signal] === undefined) {
-        DFSignals.registry[signal] = [];
+    if (window.DFSignals.registry[signal] === undefined) {
+        window.DFSignals.registry[signal] = [];
     }
-    DFSignals.registry[signal].push(fn);
+    window.DFSignals.registry[signal].push(fn);
 }
 
 document.addEventListener("DOMContentLoaded", websocketConnect);
 
-DFSignals.call = call;
-DFSignals.connect = connect;
+window.DFSignals.call = call;
+window.DFSignals.connect = connect;

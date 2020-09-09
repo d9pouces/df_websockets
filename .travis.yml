@@ -21,6 +21,6 @@ matrix:
 install:
     - python setup.py develop
 before_script:
-  - pip install "$DJANGO_VERSION"
+    - python -m pip install "$DJANGO_VERSION"
 script:
     - python setup.py test

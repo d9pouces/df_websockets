@@ -91,7 +91,7 @@ function DOMContentAdded(evt) {
                             opts[signal.value] = target.value;
                         }
                     }
-                    DFSignals.call(
+                    window.DFSignals.call(
                         signal.name,
                         opts
                     );
@@ -112,5 +112,5 @@ document.addEventListener("DOMContentAdded", (evt) => {
         DOMContentAdded(evt);
     }, 200);
     // awful trick for being sure that our addEventListener is the last.
-    // allows CKEditor to push its content to the textarea before sending the content of the form.
+    // allows things like CKEditor to push its content to the textarea before sending the content of the form.
 });
