@@ -42,10 +42,10 @@ class Command(BaseCommand):
             if not any(x in sys.argv for x in ("-c", "--concurrency", "-P", "--pool")):
                 sys.argv += ["-c", "1", "--pool", "solo"]
                 if callable(run_with_reloader):
-                    return run_with_reloader(celery_main, sys.argv)
+                    return run_with_reloader(celery_main)
                 elif callable(python_reloader):
-                    return python_reloader(celery_main, (sys.argv,), {})
-        celery_main(sys.argv)
+                    return python_reloader(celery_main, (), {})
+        celery_main()
 
     def handle(self, *args, **options):
         pass
