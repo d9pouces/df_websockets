@@ -63,17 +63,21 @@ class DFConsumer(WebsocketConsumer):
         self.topics = []
 
     def connect(self):
-        request = self.build_http_request()
-        handler = get_handler()
-        handler.get_response(request)
-        request.window_key = request.GET.get(
-            WebsocketMiddleware.ws_windowkey_get_parameter, ""
-        )
-        self.topics = get_websocket_topics(request)
-        self.window_info = WindowInfo.from_request(request)
-        for topic in self.topics:
-            async_to_sync(self.channel_layer.group_add)(topic, self.channel_name)
-        super().connect()
+        try:
+            request = self.build_http_request()
+            handler = get_handler()
+            handler.get_response(request)
+            request.window_key = request.GET.get(
+                WebsocketMiddleware.ws_windowkey_get_parameter, ""
+            )
+            self.topics = get_websocket_topics(request)
+            self.window_info = WindowInfo.from_request(request)
+            for topic in self.topics:
+                async_to_sync(self.channel_layer.group_add)(topic, self.channel_name)
+            super().connect()
+        except Exception as e:
+            logger.exception(e)
+            raise e
 
     def build_http_request(self):
         request = HttpRequest()
