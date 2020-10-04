@@ -23,12 +23,13 @@ from django.core.management import BaseCommand
 from df_websockets import ws_settings
 
 try:
+    from django.utils.autoreload import run_with_reloader
+
+    python_reloader = None
+except ImportError:
     from django.utils.autoreload import python_reloader
 
     run_with_reloader = None
-except ImportError:
-    python_reloader = None
-    from django.utils.autoreload import run_with_reloader
 
 
 class Command(BaseCommand):
@@ -41,10 +42,10 @@ class Command(BaseCommand):
         if settings.DEBUG and "-h" not in sys.argv:
             if not any(x in sys.argv for x in ("-c", "--concurrency", "-P", "--pool")):
                 sys.argv += ["-c", "1", "--pool", "solo"]
-                if callable(run_with_reloader):
-                    return run_with_reloader(celery_main)
-                elif callable(python_reloader):
-                    return python_reloader(celery_main, (), {})
+            if callable(run_with_reloader):
+                return run_with_reloader(celery_main)
+            elif callable(python_reloader):
+                return python_reloader(celery_main, (), {})
         celery_main()
 
     def handle(self, *args, **options):
