@@ -27,6 +27,7 @@ try:
 
     python_reloader = None
 except ImportError:
+    # noinspection PyUnresolvedReferences
     from django.utils.autoreload import python_reloader
 
     run_with_reloader = None
