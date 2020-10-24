@@ -13,4 +13,4 @@
 #  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
 #                                                                              #
 # ##############################################################################
-__version__ = "0.10.3"
+__version__ = "0.10.4"
