@@ -19,7 +19,7 @@ from setuptools import setup
 setup(
     test_suite="test_df_websockets",
     install_requires=[
-        "asgiref",
+        "asgiref~=3.2.10",
         "celery",
         "channels",
         "channels_redis",
