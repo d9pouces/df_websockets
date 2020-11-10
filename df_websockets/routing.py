@@ -22,7 +22,7 @@ from df_websockets import ws_settings
 from df_websockets.consumers import DFConsumer
 
 websocket_urlpatterns = [
-    path(ws_settings.WEBSOCKET_URL[1:], DFConsumer),
+    path(ws_settings.WEBSOCKET_URL[1:], DFConsumer.as_asgi()),
 ]
 
 

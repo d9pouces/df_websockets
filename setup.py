@@ -19,9 +19,9 @@ from setuptools import setup
 setup(
     test_suite="test_df_websockets",
     install_requires=[
-        "asgiref~=3.2.10",
+        "asgiref",
         "celery",
-        "channels",
+        "channels>=3.0",
         "channels_redis",
         "df_config",
         "django",
