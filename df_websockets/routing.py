@@ -16,19 +16,20 @@
 
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
+from django.core.handlers.asgi import ASGIHandler
 from django.urls import path
 
 from df_websockets import ws_settings
 from df_websockets.consumers import DFConsumer
 
 websocket_urlpatterns = [
-    path(ws_settings.WEBSOCKET_URL[1:], DFConsumer),
+    path(ws_settings.WEBSOCKET_URL[1:], DFConsumer.as_asgi()),
 ]
 
 
 application = ProtocolTypeRouter(
     {
-        # (http->django views is added by default)
+        "http": ASGIHandler(),
         "websocket": AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
     }
 )
