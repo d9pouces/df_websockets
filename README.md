@@ -184,13 +184,17 @@ Using on a HTML form:
 ```html
 <form data-df-signal='[{"name": "signal.name", "on": "change", "form": "form_data", "opts": {"id": 42} }]'>
     <input type="text" name="title" value="df_websockets">
-</form>```
+</form>
+```
+
 or, using the Django templating system:
+
 ```html
 {% load df_websockets %}
 <form {% js_call "signal.name" on="change" form="form_data" id=42 %}>
     <input type="text" name="title" value="df_websockets">
-</form>```
+</form>
+```
 
 When the field "title" is modified, `my_signal_function(window_info, form_data = [{"name": "title", "value": "df_websockets"}], id=43)` is called.
 
@@ -200,13 +204,17 @@ Using on a HTML form input field:
 ```html
 <form>
     <input type="text" name="title" data-df-signal='[{"name": "signal.name", "on": "change", "value": "title", "opts": {"id": 42} }]'>
-</form>```
+</form>
+```
+
 or, using the Django templating system:
+
 ```html
 {% load df_websockets %}
 <form>
     <input type="text" name="title" {% js_call "signal.name" on="change" value="title" id=42 %}>
-</form>```
+</form>
+```
 
 When the field "title" is modified, `my_signal_function(window_info, title="new title value", id=43)` is called.
 
