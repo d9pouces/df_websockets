@@ -121,17 +121,17 @@ When the server triggers a signal, it can select if the signal is called on the 
 A Django view using this signal system must call `set_websocket_topics` to add some ”topics” to this view.
 `js/df_websockets.min.js` must also be added to the resulting HTML. 
 
-```
+```python
 from df_websockets.tasks import set_websocket_topics
 
 def any_view(request):  # this is a standard Django view
     # useful code
     obj1 = MyModel.objects.get(id=42)
-    set_websocket_topics(request, [obj1, obj2, obj3])
-    return HttpResponse()
+    set_websocket_topics(request, [obj1])
+    return TemplateResponse("my/template.html", {})
 ```
 
-`obj1`, `obj2`, `obj3` must be Python objects that are handled by the `WEBSOCKET_TOPIC_SERIALIZER` function. By default, any string and Django model are valid.
+`obj1` must be a Python object that is handled by the `WEBSOCKET_TOPIC_SERIALIZER` function. By default, any string and Django models are valid.
 Each window also has a unique identifier that is automatically added to this list, as well as the connected user id and the `BROADCAST`.
 
 The following code will call the JS function on every browser window having the `obj` topic and to the displayed window.
@@ -155,6 +155,60 @@ There are three special values:
 Some information about the original window (like its unique identifier or the connected user) must be provided to the triggered Python code, allowing it to trigger JS events on any selected window.  
 These data are stored in the `WindowInfo` object, automatically built from the HTTP request by the trigger function and provided as first argument to the triggered code.
 The `trigger` function accepts `WindowInfo` or `HTTPRequest` objects as first argument.
+
+
+HTML forms
+----------
+
+`df_websockets` comes with some helper functions when you signals to be trigger on the server when a form is submitted or changed.
+Assuming that you have a `signals.py` file that contains:
+```python
+from df_websockets.decorators import signal
+from df_websockets.tasks import WINDOW, trigger
+from df_websockets.utils import SerializedForm
+from django import forms
+
+
+class MyForm(forms.Form): 
+    title = forms.CharField()
+
+@signal(path='signal.name')
+def my_signal_function(window_info, form_data: SerializedForm(MyForm)=None, title=None, id=None):
+    print(form_data and form_data.is_valid())
+    trigger(window_info, 'myproject.first_signal', to=WINDOW, title=title)
+
+```
+
+
+Using on a HTML form:
+```html
+<form data-df-signal='[{"name": "signal.name", "on": "change", "form": "form_data", "opts": {"id": 42} }]'>
+    <input type="text" name="title" value="df_websockets">
+</form>```
+or, using the Django templating system:
+```html
+{% load df_websockets %}
+<form {% js_call "signal.name" on="change" form="form_data" id=42 %}>
+    <input type="text" name="title" value="df_websockets">
+</form>```
+
+When the field "title" is modified, `my_signal_function(window_info, form_data = [{"name": "title", "value": "df_websockets"}], id=43)` is called.
+
+
+
+Using on a HTML form input field:
+```html
+<form>
+    <input type="text" name="title" data-df-signal='[{"name": "signal.name", "on": "change", "value": "title", "opts": {"id": 42} }]'>
+</form>```
+or, using the Django templating system:
+```html
+{% load df_websockets %}
+<form>
+    <input type="text" name="title" {% js_call "signal.name" on="change" value="title" id=42 %}>
+</form>```
+
+When the field "title" is modified, `my_signal_function(window_info, title="new title value", id=43)` is called.
 
 
 
@@ -183,7 +237,6 @@ Both server-side and client-side signals are kept into memory:
       * `to_server` is `True` if this signal must be processed server-side,
       * `queue` is the name of the selected Celery queue.
 
-
 ```python
 from df_websockets.tasks import trigger, SERVER
 from df_websockets.window_info import WindowInfo
@@ -203,5 +256,4 @@ with SignalQueue() as fd:
 # fd.python_signals looks like {'demo-queue': [ ['test.signal1', {…}, {'value': 'value1'}, False, None, True, None], 
 # # ['test.signal2', {…}, {'value': 'value2'}, False, None, True, None]]}
 # fd.ws_signals looks like {'-int.1': [('test.signal1', {'value': 'value1'}), ('test.signal2', {'value': 'value2'})]}
-
 ```

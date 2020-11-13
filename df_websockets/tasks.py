@@ -95,13 +95,19 @@ __values = {
     else "",
 }
 redis_connection_pool = ConnectionPool.from_url(
-    "redis://%(password)s%(host)s%(port)s/%(db)s" % __values, retry_on_timeout=True, socket_keepalive=True
+    "redis://%(password)s%(host)s%(port)s/%(db)s" % __values,
+    retry_on_timeout=True,
+    socket_keepalive=True,
 )
 
 
 def get_websocket_redis_connection():
     """Return a valid Redis connection, using a connection pool."""
-    return StrictRedis(connection_pool=redis_connection_pool, retry_on_timeout=True, socket_keepalive=True)
+    return StrictRedis(
+        connection_pool=redis_connection_pool,
+        retry_on_timeout=True,
+        socket_keepalive=True,
+    )
 
 
 def set_websocket_topics(request, *topics):

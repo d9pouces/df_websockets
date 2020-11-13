@@ -14,6 +14,8 @@
 //                                                                             /
 ////////////////////////////////////////////////////////////////////////////////
 
+import {setFormInputValue} from "./forms";
+
 function connectSignals() {
 
     // noinspection ES6ModulesDependencies
@@ -32,7 +34,13 @@ function connectSignals() {
 
             window.DFSignals.call('html.add_class', {selector: "#obj", class_name: "myclass"});
 
-        :param string selector: jQuery selector
+
+        .. code-block:: python
+
+            trigger(window_info, 'html.add_class', to=WINDOW, selector="#obj", class_name="myclass")
+
+
+        :param string selector: HTML selector
         :param string class_name: new class
 
     */
@@ -51,7 +59,11 @@ function connectSignals() {
 
             window.DFSignals.call('html.after', {selector: "#obj", content: "<span>hello</span>"});
 
-        :param string selector: jQuery selector
+        .. code-block:: python
+
+            trigger(window_info, 'html.after', to=WINDOW, selector="#obj", content="<span>hello</span>")
+
+        :param string selector: HTML selector
         :param string content: new HTML content
 
     */
@@ -70,7 +82,11 @@ function connectSignals() {
 
             window.DFSignals.call('html.append', {selector: "#obj", content: "<span>hello</span>"});
 
-        :param string selector: jQuery selector
+        .. code-block:: python
+
+            trigger(window_info, 'html.append', to=WINDOW, selector="#obj", content="<span>hello</span>")
+
+        :param string selector: HTML selector
         :param string content: new HTML content
 
     */
@@ -89,7 +105,11 @@ function connectSignals() {
 
             window.DFSignals.call('html.before', {selector: "#obj", content: "<span>hello</span>"});
 
-        :param string selector: jQuery selector
+        .. code-block:: python
+
+            trigger(window_info, 'html.before', to=WINDOW, selector="#obj", content="<span>hello</span>")
+
+        :param string selector: HTML selector
         :param string content: new HTML content
 
     */
@@ -110,7 +130,11 @@ function connectSignals() {
 
             window.DFSignals.call('html.empty', {selector: "#obj"});
 
-        :param string selector: jQuery selector
+        .. code-block:: python
+
+            trigger(window_info, 'html.empty', to=WINDOW, selector="#obj")
+
+        :param string selector: HTML selector
 
     */
 
@@ -128,7 +152,11 @@ function connectSignals() {
 
             window.DFSignals.call('html.prepend', {selector: "#obj", content: "<span>hello</span>"});
 
-        :param string selector: jQuery selector
+        .. code-block:: python
+
+            trigger(window_info, 'html.prepend', to=WINDOW, selector="#obj", content="<span>hello</span>")
+
+        :param string selector: HTML selector
         :param string content: new HTML content
 
     */
@@ -147,7 +175,11 @@ function connectSignals() {
 
             window.DFSignals.call('html.remove', {selector: "#obj"});
 
-        :param string selector: jQuery selector
+        .. code-block:: python
+
+            trigger(window_info, 'html.remove', to=WINDOW, selector="#obj")
+
+        :param string selector: HTML selector
 
     */
     window.DFSignals.connect('html.remove_attr', (opts) => {
@@ -165,7 +197,11 @@ function connectSignals() {
 
             window.DFSignals.call('html.remove_attr', {selector: "#obj", attr_name: "attr"});
 
-        :param string selector: jQuery selector
+        .. code-block:: python
+
+            trigger(window_info, 'html.remove_attr', to=WINDOW, selector="#obj", attr_name="attr")
+
+        :param string selector: HTML selector
         :param string attr_name: attribute to remove
 
     */
@@ -184,7 +220,11 @@ function connectSignals() {
 
             window.DFSignals.call('html.remove_class', {selector: "#obj", class_name: "class"});
 
-        :param string selector: jQuery selector
+        .. code-block:: python
+
+            trigger(window_info, 'html.remove_class', to=WINDOW, selector="#obj", class_name="attr")
+
+        :param string selector: HTML selector
         :param string class_name: class to remove
 
     */
@@ -202,7 +242,11 @@ function connectSignals() {
 
             window.DFSignals.call('html.replace_with', {selector: "#obj", content: "<span>hello</span>"});
 
-        :param string selector: jQuery selector
+        .. code-block:: python
+
+            trigger(window_info, 'html.replace_with', to=WINDOW, selector="#obj", content="<span>hello</span>")
+
+        :param string selector: HTML selector
         :param string content: new HTML content
 
     */
@@ -214,16 +258,22 @@ function connectSignals() {
         });
     });
     /*"""
-    .. function:: html.after(opts)
+    .. function:: html.add_attribute(opts)
 
-        Insert content, specified by the parameter, after each element in the set of matched elements..
+        Add an attribute to each element matched by the given selector.
 
         .. code-block:: javascript
 
-            window.DFSignals.call('html.after', {selector: "#obj", content: "<span>hello</span>"});
+            window.DFSignals.call('html.add_attribute', {selector: "#obj", attr_name: "data-df", attr_value: "value"});
 
-        :param string selector: jQuery selector
-        :param string content: new HTML content
+        .. code-block:: python
+
+            trigger(window_info, 'html.add_attribute', to=WINDOW, selector="#obj", attr_name="data-df", attr_value= "value")
+
+
+        :param string selector: HTML selector
+        :param string attr_name: name of the attribute to add
+        :param string attr_value: value of the attribute to add
 
     */
 
@@ -241,7 +291,12 @@ function connectSignals() {
 
             window.DFSignals.call('html.content', {selector: "#obj", content: "<span>hello</span>"});
 
-        :param string selector: jQuery selector
+        .. code-block:: python
+
+            trigger(window_info, 'html.content', to=WINDOW, selector="#obj", content= "<span>hello</span>")
+
+
+        :param string selector: HTML selector
         :param string content: new HTML content
     */
 
@@ -260,8 +315,12 @@ function connectSignals() {
 
             window.DFSignals.call('html.text', {selector: "#obj", content: "<span>hello</span>"});
 
+        .. code-block:: python
 
-        :param string selector: jQuery selector
+            trigger(window_info, 'html.text', to=WINDOW, selector="#obj", content= "<span>hello</span>")
+
+
+        :param string selector: HTML selector
         :param string content: new HTML content
 
     */
@@ -276,6 +335,9 @@ function connectSignals() {
 
                 window.DFSignals.call('html.download_file', {url: "http://example.org/test.zip", filename: "test.zip"});
 
+        .. code-block:: python
+
+            trigger(window_info, 'html.download_file', to=WINDOW, url="http://example.org/test.zip", filename="test.zip")
 
             :param string url: URL of the file
             :param string filename: name of the file
@@ -306,9 +368,32 @@ function connectSignals() {
 
             window.DFSignals.call('html.focus', {selector: "#obj"});
 
-        :param string selector: jQuery selector
+        .. code-block:: python
+
+            trigger(window_info, 'html.focus', to=WINDOW, selector="#obj")
+
+        :param string selector: HTML selector
 
     */
-}
+    
+    window.DFSignals.connect('html.forms.set', (opts) => {
+        setFormInputValue(opts.selector, opts.value);
+    });
+    /*"""
+    .. function:: html.forms.set(opts)
+
+        Set the value of a form input
+
+        .. code-block:: javascript
+
+            window.DFSignals.call('html.forms.set', {selector: "[name=title]", value: "new title"});
+
+        .. code-block:: python
+
+            trigger(window_info, 'html.forms.set', to=WINDOW, selector="[name=title]", value="new_title")
+
+        :param string selector: HTML selector
+
+    */}
 
 document.addEventListener("DOMContentLoaded", connectSignals);

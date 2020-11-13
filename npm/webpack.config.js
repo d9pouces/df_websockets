@@ -22,7 +22,7 @@ const path = require('path');
 // noinspection JSUnresolvedVariable,JSUnresolvedFunction
 module.exports = {
     entry: {
-        "df_websockets": ['./df_websockets/app.js', './df_websockets/base.js', './df_websockets/forms.js'],
+        "df_websockets": ['./df_websockets/app.js', './df_websockets/base.js', './df_websockets/forms.ts'],
     },
     resolve: {
         extensions: ['.ts', '.js', '.json']

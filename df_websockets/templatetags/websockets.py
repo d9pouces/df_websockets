@@ -53,12 +53,18 @@ class JSCall:
 
 
 @register.simple_tag()
-def js_calls(*calls):
+def js_calls(*calls: JSCall):
     values = [x.get_json_dict() for x in calls]
     return mark_safe(' data-df-signal="%s" ' % escape(json.dumps(values)))
 
 
 @register.simple_tag()
-def js_call(name, on=None, form=None, value=None, **kwargs):
+def js_call(
+    name: str,
+    on: Optional[str] = None,
+    form: Optional[str] = None,
+    value: Optional[str] = None,
+    **kwargs
+):
     call = JSCall(name, on=on, opts=kwargs, form=form, value=value)
     return js_calls(call)

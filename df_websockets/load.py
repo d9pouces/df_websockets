@@ -20,4 +20,5 @@ def load_celery():
     Allow to automatically load tasks
     """
     from df_websockets.celery import app
+
     return app

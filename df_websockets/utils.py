@@ -140,6 +140,7 @@ class SerializedForm:
         :rtype: :class:`django.forms.Form`
         """
         from django.forms import FileField
+
         if value is None:
             return self.form_cls(*args, **kwargs)
 
@@ -149,7 +150,7 @@ class SerializedForm:
             name = obj["name"]
             value = obj["value"]
             if name in self.form_cls.base_fields and isinstance(
-                    self.form_cls.base_fields[name], FileField
+                self.form_cls.base_fields[name], FileField
             ):
                 mimetypes.init()
                 basename = os.path.basename(value)
