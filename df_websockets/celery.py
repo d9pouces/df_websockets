@@ -28,9 +28,28 @@ from django.conf import settings
 
 from df_config.manage import set_env
 
+try:
+    # noinspection PyProtectedMember
+    from celery.app.defaults import _TO_NEW_KEY
+except ImportError:
+    _TO_NEW_KEY = None
 module_name = set_env()
 app = Celery(module_name)
-app.config_from_object(settings)
+if _TO_NEW_KEY:
+
+    class CelerySetting:
+        pass
+
+    celery_settings = CelerySetting()
+    for old_setting, new_setting in _TO_NEW_KEY.items():
+        if hasattr(settings, old_setting):
+            setattr(celery_settings, new_setting, getattr(settings, old_setting))
+        elif hasattr(settings, new_setting):
+            setattr(celery_settings, new_setting, getattr(settings, new_setting))
+else:
+    celery_settings = settings
+
+app.config_from_object(celery_settings)
 
 app.autodiscover_tasks([a.name for a in apps.app_configs.values()])
 
