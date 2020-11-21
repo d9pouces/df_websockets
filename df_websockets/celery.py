@@ -36,6 +36,7 @@ except ImportError:
 module_name = set_env()
 app = Celery(module_name)
 if _TO_NEW_KEY:
+    # compatibility with the incoming Celery 6 and avoid warning in Celery 5
 
     class CelerySetting:
         pass

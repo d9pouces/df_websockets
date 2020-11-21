@@ -43,9 +43,9 @@ def unsign_token(session_id, signed_token):
 
 
 class WebsocketMiddleware(MiddlewareMixin):
-    ws_url_cookie_name = "dfwsurl"
+    ws_url_cookie_name = "__Host-dfwsurl"
     ws_windowkey_get_parameter = "dfwskey"
-    ws_windowkey_cookie_name = "dfwskey"
+    ws_windowkey_cookie_name = "__Host-dfwskey"
     ws_windowkey_header_name = "DFWSKEY"
 
     def process_request(self, request: HttpRequest):

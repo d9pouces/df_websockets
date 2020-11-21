@@ -39,7 +39,7 @@ function getCookie(cname) {
 
 function websocketConnect() {
     if (window.DFSignals.wsurl === null) {
-        const dfWsURL = getCookie("dfwsurl");
+        const dfWsURL = getCookie("__Host-dfwsurl");
         window.DFSignals.wsurl = decodeURIComponent(dfWsURL);
     }
     if (!window.DFSignals.wsurl) {
