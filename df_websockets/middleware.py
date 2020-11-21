@@ -43,10 +43,22 @@ def unsign_token(session_id, signed_token):
 
 
 class WebsocketMiddleware(MiddlewareMixin):
-    ws_url_cookie_name = "__Host-dfwsurl"
     ws_windowkey_get_parameter = "dfwskey"
-    ws_windowkey_cookie_name = "__Host-dfwskey"
     ws_windowkey_header_name = "DFWSKEY"
+
+    @staticmethod
+    def ws_url_cookie_name(request: HttpRequest) -> str:
+        cookie_name = "dfwsurl"
+        if request.is_secure():
+            return "__Host-" + cookie_name
+        return cookie_name
+
+    @staticmethod
+    def ws_windowkey_cookie_name(request: HttpRequest) -> str:
+        cookie_name = "dfwskey"
+        if request.is_secure():
+            return "__Host-" + cookie_name
+        return cookie_name
 
     def process_request(self, request: HttpRequest):
         request.window_key = None
@@ -54,11 +66,12 @@ class WebsocketMiddleware(MiddlewareMixin):
             request.window_key = request.META.get(
                 "HTTP_%s" % self.ws_windowkey_header_name
             )
+            name = self.ws_windowkey_cookie_name(request)
             if (
                 not request.window_key
-                and self.ws_windowkey_cookie_name in request.COOKIES
+                and name in request.COOKIES
             ):
-                request.window_key = request.COOKIES[self.ws_windowkey_cookie_name]
+                request.window_key = request.COOKIES[name]
         if not request.window_key:
             request.window_key = get_random_string(32, VALID_KEY_CHARS)
         request.has_websocket_topics = False
@@ -76,7 +89,7 @@ class WebsocketMiddleware(MiddlewareMixin):
                 window_key,
             )
             response.set_cookie(
-                self.ws_url_cookie_name,
+                self.ws_url_cookie_name(request),
                 quote_plus(ws_url),
                 max_age=86400,
                 domain=settings.CSRF_COOKIE_DOMAIN,
@@ -86,7 +99,7 @@ class WebsocketMiddleware(MiddlewareMixin):
                 samesite=settings.CSRF_COOKIE_SAMESITE,
             )
             response.set_cookie(
-                self.ws_windowkey_cookie_name,
+                self.ws_windowkey_cookie_name(request),
                 window_key,
                 max_age=86400,
                 domain=settings.CSRF_COOKIE_DOMAIN,

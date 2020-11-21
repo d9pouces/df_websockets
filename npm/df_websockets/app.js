@@ -38,11 +38,13 @@ function getCookie(cname) {
 }
 
 function websocketConnect() {
+    const cookieName = location.protocol === 'https:' ? "__Host-dfwsurl" : "dfwsurl";
     if (window.DFSignals.wsurl === null) {
-        const dfWsURL = getCookie("__Host-dfwsurl");
+        const dfWsURL = getCookie(cookieName);
         window.DFSignals.wsurl = decodeURIComponent(dfWsURL);
     }
     if (!window.DFSignals.wsurl) {
+        console.info("Unable to get the websocket URL in the '" + cookieName + "' cookie.");
         return;
     }
     const connection = new WebSocket(window.DFSignals.wsurl);
