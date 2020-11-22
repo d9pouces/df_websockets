@@ -38,7 +38,7 @@ function getCookie(cname) {
 }
 
 function websocketConnect() {
-    const cookieName = location.protocol === 'https:' ? "__Host-dfwsurl" : "dfwsurl";
+    const cookieName = "dfwsurl";
     if (window.DFSignals.wsurl === null) {
         const dfWsURL = getCookie(cookieName);
         window.DFSignals.wsurl = decodeURIComponent(dfWsURL);

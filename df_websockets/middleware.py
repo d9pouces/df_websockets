@@ -46,19 +46,15 @@ class WebsocketMiddleware(MiddlewareMixin):
     ws_windowkey_get_parameter = "dfwskey"
     ws_windowkey_header_name = "DFWSKEY"
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def ws_url_cookie_name(request: HttpRequest) -> str:
-        cookie_name = "dfwsurl"
-        if request.is_secure():
-            return "__Host-" + cookie_name
-        return cookie_name
+        return  "dfwsurl"
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def ws_windowkey_cookie_name(request: HttpRequest) -> str:
-        cookie_name = "dfwskey"
-        if request.is_secure():
-            return "__Host-" + cookie_name
-        return cookie_name
+        return "dfwskey"
 
     def process_request(self, request: HttpRequest):
         request.window_key = None
@@ -67,10 +63,7 @@ class WebsocketMiddleware(MiddlewareMixin):
                 "HTTP_%s" % self.ws_windowkey_header_name
             )
             name = self.ws_windowkey_cookie_name(request)
-            if (
-                not request.window_key
-                and name in request.COOKIES
-            ):
+            if not request.window_key and name in request.COOKIES:
                 request.window_key = request.COOKIES[name]
         if not request.window_key:
             request.window_key = get_random_string(32, VALID_KEY_CHARS)
