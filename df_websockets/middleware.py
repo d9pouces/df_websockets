@@ -49,7 +49,7 @@ class WebsocketMiddleware(MiddlewareMixin):
     # noinspection PyUnusedLocal
     @staticmethod
     def ws_url_cookie_name(request: HttpRequest) -> str:
-        return  "dfwsurl"
+        return "dfwsurl"
 
     # noinspection PyUnusedLocal
     @staticmethod
@@ -72,15 +72,28 @@ class WebsocketMiddleware(MiddlewareMixin):
     def process_response(self, request: HttpRequest, response: HttpResponse):
         # noinspection PyUnresolvedReferences
         if request.has_websocket_topics:
-            http_url = request.build_absolute_uri(ws_settings.WEBSOCKET_URL)
-            use_ssl = request.scheme.endswith("s")
             # noinspection PyUnresolvedReferences
             window_key = request.window_key
-            ws_url = "ws%s?%s=%s" % (
-                http_url[4:],
-                self.ws_windowkey_get_parameter,
-                window_key,
-            )
+            use_ssl = request.scheme.endswith("s")
+            host = getattr(settings, "SERVER_NAME")
+            port = getattr(settings, "SERVER_PORT")
+            ws_url = ws_settings.WEBSOCKET_URL
+            param = self.ws_windowkey_get_parameter
+            if host and port:
+                args = (
+                    host,
+                    port,
+                    ws_url,
+                    param,
+                    window_key,
+                )
+                if use_ssl:
+                    ws_url = "wss://%s:%s%s?%s=%s" % args
+                else:
+                    ws_url = "ws://%s:%s%s?%s=%s" % args
+            else:
+                http_url = request.build_absolute_uri(ws_url)
+                ws_url = "ws%s?%s=%s" % (http_url[4:], param, window_key,)
             response.set_cookie(
                 self.ws_url_cookie_name(request),
                 quote_plus(ws_url),
