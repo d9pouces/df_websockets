@@ -6,4 +6,5 @@
 }
 .success {
     color: darkgreen;
+    font-weight: bold;
 }

@@ -57,6 +57,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+ASGI_APPLICATION = "df_websockets.routing.application"
 CELERY_APP = "df_websockets"
 # the celery application
 CELERY_DEFAULT_QUEUE = "celery"
@@ -145,4 +146,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = "/static/"
-ASGI_APPLICATION = "df_websockets.routing.application"

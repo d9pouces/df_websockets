@@ -33,69 +33,31 @@
     <i class="original">&times;</i>
 </div>
 
-    window.DFSignals.connect('html.append', htmlAppend);
-    /*"""
-    .. function:: html.append(opts)
+<h3>html.prepend</h3>
+<div>
+    <i class="original">&times;</i>
+</div>
+<ul>
+    <li class="prepend"><i class="original">A text will be inserted at the beginning of this paragraph.</i></li>
+    <li class="prepend"><i class="original">A text will be inserted at the beginning of this paragraph.</i></li>
+</ul>
+<div>
+    <i class="original">&times;</i>
+</div>
 
-        Insert content, specified by the parameter, to the end of each element in the set of matched elements.
-        Equivalent to `$().append()` or `.insertAdjacentHTML('beforeend', ...)`.
-        Trigger a `DOMContentAdded` event on the added content.
+<h3>html.before</h3>
+<div>
+    <i class="original">&times;</i>
+</div>
+<ul>
+    <li class="before"><i class="original">A text will be inserted before this paragraph.</i></li>
+    <li class="before"><i class="original">A text will be inserted before this paragraph.</i></li>
+</ul>
+<div>
+    <i class="original">&times;</i>
+</div>
 
-        .. code-block:: javascript
 
-            window.DFSignals.call('html.append', {selector: "#obj", content: "<span>hello</span>"});
-
-        .. code-block:: python
-
-            trigger(window_info, 'html.append', to=WINDOW, selector="#obj", content="<span>hello</span>")
-
-        :param string selector: HTML selector
-        :param string content: new HTML content
-
-    */
-
-    window.DFSignals.connect('html.prepend', htmlPrepend);
-
-    /*"""
-    .. function:: html.prepend(opts)
-
-        Insert content, specified by the parameter, to the beginning of each element in the set of matched elements.
-        Equivalent to `$().prepend()` or `.insertAdjacentHTML('afterbegin', ...)`.
-        Trigger a `DOMContentAdded` event on the added content.
-
-        .. code-block:: javascript
-
-            window.DFSignals.call('html.prepend', {selector: "#obj", content: "<span>hello</span>"});
-
-        .. code-block:: python
-
-            trigger(window_info, 'html.prepend', to=WINDOW, selector="#obj", content="<span>hello</span>")
-
-        :param string selector: HTML selector
-        :param string content: new HTML content
-
-    */
-
-    window.DFSignals.connect('html.before', htmlBefore);
-    /*"""
-    .. function:: html.before(opts)
-
-        Insert content, specified by the parameter, before each element in the set of matched elements..
-        Equivalent to `$().before()` or `.insertAdjacentHTML('beforebegin', ...)`.
-        Trigger a `DOMContentAdded` event on the added content.
-
-        .. code-block:: javascript
-
-            window.DFSignals.call('html.before', {selector: "#obj", content: "<span>hello</span>"});
-
-        .. code-block:: python
-
-            trigger(window_info, 'html.before', to=WINDOW, selector="#obj", content="<span>hello</span>")
-
-        :param string selector: HTML selector
-        :param string content: new HTML content
-
-    */
     window.DFSignals.connect('html.content', htmlContent);
     /*"""
     .. function:: html.content(opts)
