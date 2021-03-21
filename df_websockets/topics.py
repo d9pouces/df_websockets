@@ -20,18 +20,17 @@ from df_websockets.window_info import Session
 
 
 def serialize_topic(window_info, obj):
-    """ The default serialization function can serialize any Python object with the following rules
+    """The default serialization function can serialize any Python object with the following rules
 
-  * :class:`df_websockets.tasks.BROADCAST` to '-broadcast'
-  * :class:`df_websockets.tasks.WINDOW` to '-window.' + the unique window key provided
-    by the :class:`df_websockets.window_info.WindowInfo` object,
-  * :class:`django.db.models.Model` as "app_label.model_name.primary_key"
-  * :class:`df_websockets.tasks.USER` to converted to the authenticated user then
-    serialized as any Django model,
-  * :class:`django.wsgi.window_info.Session` serialized to "-session.key"
-  * other objects are serialized to "class.hash(obj)"
-
-"""
+    * :class:`df_websockets.tasks.BROADCAST` to '-broadcast'
+    * :class:`df_websockets.tasks.WINDOW` to '-window.' + the unique window key provided
+      by the :class:`df_websockets.window_info.WindowInfo` object,
+    * :class:`django.db.models.Model` as "app_label.model_name.primary_key"
+    * :class:`df_websockets.tasks.USER` to converted to the authenticated user then
+      serialized as any Django model,
+    * :class:`django.wsgi.window_info.Session` serialized to "-session.key"
+    * other objects are serialized to "class.hash(obj)"
+    """
     from df_websockets.tasks import BROADCAST, USER, WINDOW
 
     if obj is BROADCAST:

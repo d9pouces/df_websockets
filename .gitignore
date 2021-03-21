@@ -22,7 +22,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-
+db.sqlite3
 # Standard IDEs
 .idea/
 .project/

@@ -53,7 +53,7 @@ class Session:
 
 
 class WindowInfo:
-    """ Built to store the username and the window key and must be supplied to any Python signal call.
+    """Built to store the username and the window key and must be supplied to any Python signal call.
     All attributes are set by "WindowInfoMiddleware"'s.
 
     Can be constructed from a standard :class:`django.http.HttpRequest` or from a dict.
@@ -91,7 +91,7 @@ class WindowInfo:
 
     @classmethod
     def from_request(cls, request):
-        """ return a :class:`df_websockets.window_info.WindowInfo` from a :class:`django.http.HttpRequest`.
+        """return a :class:`df_websockets.window_info.WindowInfo` from a :class:`django.http.HttpRequest`.
 
         If the request already is a :class:`df_websockets.window_info.WindowInfo`,
         then it is returned as-is (not copied!).
@@ -127,7 +127,7 @@ def get_window_context(window_info):
 
 def render_to_string(template_name, context=None, window_info=None, using=None):
     """Render a template to a string using a context from the `window_info`, equivalent of
-the :meth:`django.template.loader.render_to_string`."""
+    the :meth:`django.template.loader.render_to_string`."""
     if window_info is not None and context:
         window_context = get_window_context(window_info)
         window_context.update(context)

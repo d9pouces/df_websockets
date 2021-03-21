@@ -16,7 +16,7 @@
 
 
 def load_celery():
-    """ Import Celery application unless Celery is disabled.
+    """Import Celery application unless Celery is disabled.
     Allow to automatically load tasks
     """
     from df_websockets.celery import app

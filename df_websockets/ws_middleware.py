@@ -174,8 +174,8 @@ class DjangoAuthMiddleware(WindowInfoMiddleware):
     def get_context(self, window_info):
         """provide the same context data as the :mod:`django.contrib.auth.context_processors`:
 
-         * `user`: a user or :class:`django.contrib.auth.models.AnonymousUser`
-         * `perms`, with the same meaning
+        * `user`: a user or :class:`django.contrib.auth.models.AnonymousUser`
+        * `perms`, with the same meaning
         """
         user = window_info.user or AnonymousUser()
         return {
@@ -198,7 +198,7 @@ class DjangoAuthMiddleware(WindowInfoMiddleware):
             return None
 
         def has_perm(req, perm):
-            """ return true is the user has the required perm.
+            """return true is the user has the required perm.
 
             >>> from df_websockets.window_info import WindowInfo
             >>> r = WindowInfo.from_dict({'username': 'username', 'perms':['app_label.codename']})

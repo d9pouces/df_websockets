@@ -112,10 +112,10 @@ def get_websocket_redis_connection():
 
 def set_websocket_topics(request, *topics):
     """Use it in a Django view for setting websocket topics. Any signal sent to one of these topics will be received
-by the client.
+    by the client.
 
-    :param request: :class:`django.http.request.HttpRequest`
-    :param topics: list of topics that will be subscribed by the websocket (can be any Python object).
+        :param request: :class:`django.http.request.HttpRequest`
+        :param topics: list of topics that will be subscribed by the websocket (can be any Python object).
     """
     # noinspection PyTypeChecker
     if not hasattr(request, "window_key"):
@@ -141,17 +141,17 @@ by the client.
 
 def trigger(window_info, signal_name, to=None, **kwargs):
     """Shortcut to :meth:`df_websockets.tasks.call`, allowing to directly pass arguments of the signal to this function.
-Your signal cannot use `window_info`, `signal_name` and `to` as argument names.
+    Your signal cannot use `window_info`, `signal_name` and `to` as argument names.
 
-These two successive calls are strictly equivalent:
+    These two successive calls are strictly equivalent:
 
-.. code-block:: python
+    .. code-block:: python
 
-    from df_websockets.tasks import call, trigger, WINDOW, SERVER
+        from df_websockets.tasks import call, trigger, WINDOW, SERVER
 
-    def my_python_view(request):
-        trigger(request, 'my.signal.name', to=[WINDOW, SERVER], arg1=12, arg2='Hello')
-        trigger_signal(request, 'my.signal.name', to=[WINDOW, SERVER], kwargs={'arg1': 12, 'arg2': 'Hello'})
+        def my_python_view(request):
+            trigger(request, 'my.signal.name', to=[WINDOW, SERVER], arg1=12, arg2='Hello')
+            trigger_signal(request, 'my.signal.name', to=[WINDOW, SERVER], kwargs={'arg1': 12, 'arg2': 'Hello'})
 
     """
     return _trigger_signal(
@@ -291,7 +291,8 @@ def _call_ws_signal(signal_name, signal_id, serialized_topic, kwargs):
     topic_valid = valid_topic_name(topic)
     # noinspection PyTypeChecker
     async_to_sync(channel_layer.group_send)(
-        topic_valid, {"type": "ws_message", "message": serialized_message},
+        topic_valid,
+        {"type": "ws_message", "message": serialized_message},
     )
 
 
@@ -313,7 +314,7 @@ def _return_ws_function_result(window_info, result_id, result, exception=None):
 @lru_cache()
 def import_signals_and_functions():
     """Import all `signals.py`, 'forms.py' and `functions.py` files to register signals and WS functions
-(tries these files for all Django apps).
+    (tries these files for all Django apps).
     """
 
     def try_import(module):

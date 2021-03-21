@@ -216,3 +216,10 @@ document.addEventListener("DOMContentAdded", (evt) => {
     // awful trick for being sure that our addEventListener is the last.
     // allows things like CKEditor to push its content to the textarea before sending the content of the form.
 });
+document.addEventListener("DOMContentLoaded", (evt) => {
+    window.setTimeout(() => {
+        DOMContentAdded(evt);
+    }, 200);
+    // awful trick for being sure that our addEventListener is the last.
+    // allows things like CKEditor to push its content to the textarea before sending the content of the form.
+});

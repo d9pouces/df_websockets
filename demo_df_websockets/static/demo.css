@@ -1,0 +1,9 @@
+.original {
+    color: darkolivegreen;
+}
+.original.fail {
+    color: darkred;
+}
+.success {
+    color: darkgreen;
+}

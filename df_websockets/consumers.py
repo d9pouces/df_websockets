@@ -20,6 +20,8 @@ from typing import Optional, Union
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
+from django.core.exceptions import ImproperlyConfigured
+
 from df_websockets import ws_settings
 from df_websockets.middleware import WebsocketMiddleware
 from df_websockets.tasks import SERVER, _trigger_signal, get_websocket_redis_connection
@@ -72,8 +74,15 @@ class DFConsumer(WebsocketConsumer):
             )
             self.topics = get_websocket_topics(request)
             self.window_info = WindowInfo.from_request(request)
-            for topic in self.topics:
-                async_to_sync(self.channel_layer.group_add)(topic, self.channel_name)
+            if self.channel_layer:
+                for topic in self.topics:
+                    async_to_sync(self.channel_layer.group_add)(
+                        topic, self.channel_name
+                    )
+            else:
+                raise ImproperlyConfigured(
+                    "a channel layer must be installed and configured first."
+                )
             super().connect()
         except Exception as e:
             logger.exception(e)
@@ -125,6 +134,7 @@ class DFConsumer(WebsocketConsumer):
 
     # Receive message from WebSocket
     def receive(self, text_data=None, bytes_data=None):
+        print([text_data, bytes_data])
         try:
             msg = json.loads(text_data)
             logger.debug('WS message received "%s"' % text_data)

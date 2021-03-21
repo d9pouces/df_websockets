@@ -9,7 +9,8 @@ df_websockets is based on two main ideas:
 * _signals_, that are functions triggered both on the server or the browser  window by either the server or the client,
 * _topics_ to allow the server to send signals to any group of browser windows.
 
-Signals are exchanged between the browser window and the server using a single websockets. Signals triggered by the browser on the server are processed as Celery tasks (so the websocket endpoint does almost nothing).
+Signals are exchanged between the browser window and the server using a single websocket.
+Signals triggered by the browser on the server are processed as Celery tasks (so the websocket endpoint does almost nothing).
 Signals triggered by the server can be processed as other Celery tasks and as Javascript functions on the browser.
 
 
@@ -21,7 +22,7 @@ df_config works with:
   * Python 3.6+,
   * django 2.0+,
   * celery 4.0+,
-  * redis,
+  * redis >= 5.0,
   * django-channels 2.0+,
   * channels_redis.
 
@@ -36,21 +37,31 @@ In your settings, if you do not use `df_config`, you must add the following valu
 ASGI_APPLICATION = "df_websockets.routing.application"
 # the ASGI application to use with gunicorn or daphne
 MIDDLEWARES = [..., "df_websockets.middleware.WebsocketMiddleware", ...]
+INSTALLED_APPS = [..., "channels", "df_websockets", ...]
 # a required middleware
 CELERY_APP = "df_websockets"
 # the celery application
 CELERY_DEFAULT_QUEUE = "celery"
 # the default queue to use
 WEBSOCKET_REDIS_CONNECTION = {'host': 'localhost', 'port': 6379, 'db': 3, 'password': ''}
-WEBSOCKET_REDIS_EXPIRE = 36000
+WEBSOCKET_REDIS_EXPIRE = 3600
 WEBSOCKET_REDIS_PREFIX = "ws"
 WEBSOCKET_SIGNAL_DECODER = "json.JSONDecoder"
 WEBSOCKET_SIGNAL_ENCODER = "django.core.serializers.json.DjangoJSONEncoder"
 WEBSOCKET_TOPIC_SERIALIZER = "df_websockets.topics.serialize_topic"
-WINDOW_INFO_MIDDLEWARES = ["df_websockets.ws_middleware.WindowKeyMiddleware", "df_websockets.ws_middleware.DjangoAuthMiddleware", "df_websockets.ws_middleware.Djangoi18nMiddleware", "df_websockets.ws_middleware.BrowserMiddleware",]
 # equivalent to MIDDLEWARES, but for websockets
-WEBSOCKET_URL = "/ws/"
+WINDOW_INFO_MIDDLEWARES = ["df_websockets.ws_middleware.WindowKeyMiddleware", "df_websockets.ws_middleware.DjangoAuthMiddleware", "df_websockets.ws_middleware.Djangoi18nMiddleware", "df_websockets.ws_middleware.BrowserMiddleware",]
 # the endpoint for the websockets
+WEBSOCKET_URL = "/ws/"
+# a channel layer
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 ```
 If you use `df_config` and you use a local Redis, you have nothing to do: settings are automatically set and everything is working as soon as a Redis is running on your machine.
 

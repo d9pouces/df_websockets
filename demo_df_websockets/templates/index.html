@@ -1,105 +1,37 @@
-////////////////////////////////////////////////////////////////////////////////
-// This file is part of df_websockets                                          /
-//                                                                             /
-// Copyright (C) 2020 Matthieu Gallet <github@19pouces.net>                    /
-// All Rights Reserved                                                         /
-//                                                                             /
-// You may use, distribute and modify this code under the                      /
-// terms of the (BSD-like) CeCILL-B license.                                   /
-//                                                                             /
-// You should have received a copy of the CeCILL-B license with                /
-// this file. If not, please visit:                                            /
-// https://cecill.info/licences/Licence_CeCILL-B_V1-en.txt (English)           /
-// or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         /
-//                                                                             /
-////////////////////////////////////////////////////////////////////////////////
+<!DOCTYPE html>{% load static websockets %}
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>df_websockets</title>
+    <script src="{% static 'js/df_websockets.min.js' %}"></script>
+    <script src="{% static 'demo.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'demo.css' %}">
+</head>
+<body>
+<button {% js_call 'demo.trigger_signals' on='click' %}>Trigger signals</button>
+<h3>html.after</h3>
+<div>
+    <i class="original">&times;</i>
+</div>
+<ul>
+    <li class="after"><i class="original">A text will be inserted after this paragraph.</i></li>
+    <li class="after"><i class="original">A text will be inserted after this paragraph.</i></li>
+</ul>
+<div>
+    <i class="original">&times;</i>
+</div>
 
-import {setFormInputValue} from "./forms";
-import {
-    htmlAfter,
-    htmlAppend,
-    htmlBefore,
-    htmlContent,
-    htmlEmpty,
-    htmlPrepend,
-    htmlRemove,
-    htmlReplaceWith, htmlText
-} from "./html";
-
-const htmlAddClass = opts => {
-    document.querySelectorAll(opts.selector).forEach(elt => {
-        // noinspection JSUnresolvedVariable
-        elt.classList.add(opts.class_name)
-    });
-};
-const htmlRemoveClass = (opts) => {
-    document.querySelectorAll(opts.selector).forEach(elt => {
-        // noinspection JSUnresolvedVariable
-        elt.classList.remove(opts.class_name);
-    });
-};
-const htmlRemoveAttr = (opts) => {
-    document.querySelectorAll(opts.selector).forEach(elt => {
-        // noinspection JSUnresolvedVariable
-        elt.removeAttribute(opts.attr_name);
-    });
-};
-const htmlAddAttribute = (opts) => {
-    document.querySelectorAll(opts.selector).forEach(elt => {
-        // noinspection JSUnresolvedVariable
-        elt.setAttribute(opts.attr_name, opts.attr_value);
-    });
-};
-const htmlBooleanAttribute = (opts) => {
-    document.querySelectorAll(opts.selector).forEach(elt => {
-        if (opts.value) {
-            elt.setAttribute(opts.name, opts.name);
-        } else {
-            elt.removeAttribute(opts.name)
-        }
-    });
-};
-const htmlDownloadFile = (opts) => {
-    const save = document.createElement('a');
-    save.href = opts.url;
-    save.target = '_blank';
-    save.download = opts.filename || 'unknown';
-    const evt = new MouseEvent('click', {view: window, bubbles: true, cancelable: false});
-    save.dispatchEvent(evt);
-    (window.URL || window.webkitURL).revokeObjectURL(save.href);
-};
-const htmlFocus = (opts) => {
-    const elt = document.querySelector(opts.selector);
-    if (elt) {
-        elt.focus();
-    }
-};
-const htmlFormsSet = (opts) => {
-    setFormInputValue(opts.selector, opts.value);
-};
-
-function connectSignals() {
-
-    window.DFSignals.connect('html.after', htmlAfter);
-    /*"""
-    .. function:: html.after(opts)
-
-        Insert content, specified by the parameter, after each element in the set of matched elements.
-        Equivalent to `$().after()` or `.insertAdjacentHTML('afterend', ...)`.
-        Trigger a `DOMContentAdded` event on the added content.
-
-        .. code-block:: javascript
-
-            window.DFSignals.call('html.after', {selector: "#obj", content: "<span>hello</span>"});
-
-        .. code-block:: python
-
-            trigger(window_info, 'html.after', to=WINDOW, selector="#obj", content="<span>hello</span>")
-
-        :param string selector: HTML selector
-        :param string content: new HTML content
-
-    */
+<h3>html.append</h3>
+<div>
+    <i class="original">&times;</i>
+</div>
+<ul>
+    <li class="append"><i class="original">A text will be inserted at the end of this paragraph.</i></li>
+    <li class="append"><i class="original">A text will be inserted at the end of this paragraph.</i></li>
+</ul>
+<div>
+    <i class="original">&times;</i>
+</div>
 
     window.DFSignals.connect('html.append', htmlAppend);
     /*"""
@@ -414,4 +346,5 @@ function connectSignals() {
     */
 }
 
-document.addEventListener("DOMContentLoaded", connectSignals);
+</body>
+</html>

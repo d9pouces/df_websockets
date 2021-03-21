@@ -68,6 +68,7 @@ import logging
 import random
 import re
 from inspect import signature
+from typing import Type
 
 from django import forms
 
@@ -93,24 +94,24 @@ class DynamicQueueName:
 
     def get_available_queues(self):
         """return the set of all queues that can be returned by the `__call__` method.
-         However, if this method is not implemented, the impact is currently limited:
-           * the monitoring view will not display all required queues,
-           * the systemd service files (provided by the `packaging` command) will not create all required workers.
-         """
+        However, if this method is not implemented, the impact is currently limited:
+          * the monitoring view will not display all required queues,
+          * the systemd service files (provided by the `packaging` command) will not create all required workers.
+        """
         return {ws_settings.CELERY_DEFAULT_QUEUE}
 
 
 class RandomDynamicQueueName(DynamicQueueName):
     """Return a random queue on each signal call.
 
-     This class is somewhat useless since you could just run more workers on the same queue.
+    This class is somewhat useless since you could just run more workers on the same queue.
 
-      >>> q = RandomDynamicQueueName('prefix-', 2)
-      >>> q.get_available_queues() == {'prefix-0', 'prefix-1'}
-      True
+     >>> q = RandomDynamicQueueName('prefix-', 2)
+     >>> q.get_available_queues() == {'prefix-0', 'prefix-1'}
+     True
 
-      >>> q(None, None, None) in {'prefix-0', 'prefix-1'}
-      True
+     >>> q(None, None, None) in {'prefix-0', 'prefix-1'}
+     True
 
     """
 
@@ -135,7 +136,8 @@ def server_side(connection, window_info, kwargs):
     """never allows a signal to be called from WebSockets; this signal can only be called from Python code.
     This is the default choice.
 
-    >>> @signal(is_allowed_to=server_side)
+    >>> # noinspection PyShadowingNames
+    ... @signal(is_allowed_to=server_side)
     ... def my_signal(window_info, arg1=None):
     ...     # noinspection PyUnresolvedReferences
     ...     print(window_info, arg1)
@@ -175,7 +177,7 @@ def is_anonymous(connection, window_info, kwargs):
     ... def my_signal(request, arg1=None):
     ...     # noinspection PyUnresolvedReferences
     ...     print(request, arg1)
-        """
+    """
     return window_info and window_info.is_anonymous
 
 
@@ -223,7 +225,7 @@ class has_perm:
 
 class Connection:
     """Parent class of a registered signal or remote function.
-     Do not use it directly."""
+    Do not use it directly."""
 
     required_function_arg = "window_info"
 
@@ -291,7 +293,7 @@ class Connection:
         cls = self.__class__.__name__
         for k, v in self.argument_types.items():
             try:
-                if k in kwargs:
+                if k in kwargs and callable(v) and v.__module__ != "typing":
                     kwargs[k] = v(kwargs[k])
             except ValueError:
                 logger.warning(
@@ -335,8 +337,7 @@ class Connection:
 
 
 class SignalConnection(Connection):
-    """represents a connected signal.
-    """
+    """represents a connected signal."""
 
     def register(self):
         """register the signal into the `REGISTERED_SIGNALS` dict """
@@ -363,8 +364,7 @@ class FormValidator(FunctionConnection):
     """
 
     def signature_check(self, fn):
-        """override the default method for checking the arguments, since they are independent from the Django Form.
-        """
+        """override the default method for checking the arguments, since they are independent from the Django Form."""
         if not isinstance(fn, type) or not issubclass(fn, forms.BaseForm):
             raise ValueError("validate_form only apply to Django Forms")
         self.required_arguments_names = set()
@@ -386,7 +386,11 @@ class FormValidator(FunctionConnection):
 
 
 def signal(
-    fn=None, path=None, is_allowed_to=server_side, queue=None, cls=SignalConnection
+    fn=None,
+    path=None,
+    is_allowed_to=server_side,
+    queue=None,
+    cls: Type[Connection] = SignalConnection,
 ):
     """Decorator to use for registering a new signal.
     This decorator returns the original callable as-is.
@@ -407,26 +411,25 @@ def signal(
 # noinspection PyShadowingBuiltins
 def function(fn=None, path=None, is_allowed_to=server_side, queue=None):
     """Allow the following Python code to be called from the JavaScript code.
-The result of this function is serialized (with JSON and `settings.WEBSOCKET_SIGNAL_ENCODER`) before being
-sent to the JavaScript part.
+    The result of this function is serialized (with JSON and `settings.WEBSOCKET_SIGNAL_ENCODER`) before being
+    sent to the JavaScript part.
 
-.. code-block:: python
+    .. code-block:: python
 
-  from df_websockets.decorators import function, everyone
+      from df_websockets.decorators import function, everyone
 
-  @function(path='myproject.myfunc', is_allowed_to=everyone)
-  def myfunc(window_info, arg=None)
-      print(arg)
-      return 42
+      @function(path='myproject.myfunc', is_allowed_to=everyone)
+      def myfunc(window_info, arg=None)
+          print(arg)
+          return 42
 
-The this function can be called from your JavaScript code:
+    The this function can be called from your JavaScript code:
 
-.. code-block:: javascript
+    .. code-block:: javascript
 
-  $.dfws.myproject.myfunc({arg: 3123}).then(function(result) { alert(result); });
+      $.dfws.myproject.myfunc({arg: 3123}).then(function(result) { alert(result); });
 
-
-"""
+    """
     return signal(
         fn=fn,
         path=path,
@@ -438,31 +441,31 @@ The this function can be called from your JavaScript code:
 
 def validate_form(form_cls=None, path=None, is_allowed_to=server_side, queue=None):
     """
-    Decorator for automatically validating HTML forms. Just add it to your Python code and set the 'onchange'
-    attribute to your HTML code. The `path` argument should be unique to your form class.
+        Decorator for automatically validating HTML forms. Just add it to your Python code and set the 'onchange'
+        attribute to your HTML code. The `path` argument should be unique to your form class.
 
-    :param form_cls: any subclass of :class:`django.forms.Form`
-    :param path: unique name of your form
-    :param is_allowed_to: callable for restricting the use of the form validation
-    :param queue: name (or callable) for ensuring small response times
+        :param form_cls: any subclass of :class:`django.forms.Form`
+        :param path: unique name of your form
+        :param is_allowed_to: callable for restricting the use of the form validation
+        :param queue: name (or callable) for ensuring small response times
 
-.. code-block:: python
+    .. code-block:: python
 
-    from df_websockets.decorators import everyone, validate_form
+        from df_websockets.decorators import everyone, validate_form
 
-    @validate_form(path='df_websockets.validate.search', is_allowed_to=everyone, queue='fast')
-    class MyForm(forms.Form):
-        name = forms.CharField()
-        ...
+        @validate_form(path='df_websockets.validate.search', is_allowed_to=everyone, queue='fast')
+        class MyForm(forms.Form):
+            name = forms.CharField()
+            ...
 
 
-.. code-block:: html
+    .. code-block:: html
 
-    <form onchange="$.df.validateForm(this, 'df_websockets.validate.search');"  action="?" method="post">
-        {% csrf_token %}
-        {% bootstrap_form form %}
-        <input type="submit" class="btn btn-primary" value="{% trans 'Search' %}">
-    </form>
+        <form onchange="$.df.validateForm(this, 'df_websockets.validate.search');"  action="?" method="post">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <input type="submit" class="btn btn-primary" value="{% trans 'Search' %}">
+        </form>
 
     """
     if path is None or is_allowed_to is server_side:

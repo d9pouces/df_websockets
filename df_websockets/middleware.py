@@ -75,8 +75,11 @@ class WebsocketMiddleware(MiddlewareMixin):
             # noinspection PyUnresolvedReferences
             window_key = request.window_key
             use_ssl = request.scheme.endswith("s")
-            host = getattr(settings, "SERVER_NAME")
-            port = getattr(settings, "SERVER_PORT")
+            if hasattr(settings, "SERVER_NAME") and hasattr(settings, "SERVER_PORT"):
+                host = getattr(settings, "SERVER_NAME")
+                port = getattr(settings, "SERVER_PORT")
+            else:
+                host, port = None, None
             ws_url = ws_settings.WEBSOCKET_URL
             param = self.ws_windowkey_get_parameter
             if host and port:
@@ -93,7 +96,11 @@ class WebsocketMiddleware(MiddlewareMixin):
                     ws_url = "ws://%s:%s%s?%s=%s" % args
             else:
                 http_url = request.build_absolute_uri(ws_url)
-                ws_url = "ws%s?%s=%s" % (http_url[4:], param, window_key,)
+                ws_url = "ws%s?%s=%s" % (
+                    http_url[4:],
+                    param,
+                    window_key,
+                )
             response.set_cookie(
                 self.ws_url_cookie_name(request),
                 quote_plus(ws_url),

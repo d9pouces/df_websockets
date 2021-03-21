@@ -25,7 +25,7 @@ from django.http import QueryDict
 
 
 class RE:
-    """ used to check if a string value matches a given regexp.
+    """used to check if a string value matches a given regexp.
 
     Example (requires Python 3.2+), for a function that can only handle a string of the form 123a456:
 
@@ -59,7 +59,7 @@ class RE:
 
 
 class Choice:
-    """ used to check if a value is among some valid choices.
+    """used to check if a value is among some valid choices.
 
     Example (requires Python 3.2+), for a function that can only two values:
 
