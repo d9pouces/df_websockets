@@ -51,25 +51,32 @@ function setFormFieldValue(form: HTMLFormElement, name: string, value: string | 
     const item = form.elements.namedItem(name);
     if (item === null) {
         return;
-    }
-    else if (item instanceof RadioNodeList) {
-        console.debug("name: " + name + ", RadioNodeList, value: " + value);
-        (<RadioNodeList>item).value = <string>value;
+    } else if (item instanceof RadioNodeList) {
+        if ((value === true) || (value === false)) {
+            item.forEach((input: HTMLInputElement) => {
+                input.checked = value
+            });
+        } else  if (Array.isArray(value)) {
+            const valuesSet = new Set(value);
+            item.forEach((input: HTMLInputElement) => {
+                input.checked = valuesSet.has(input.value);
+            });
+        } else {
+            item.forEach((input: HTMLInputElement) => {
+                input.checked = input.value === value;
+            });
+        }
     } else if (item instanceof HTMLTextAreaElement) {
-        console.debug("name: " + name + ", HTMLTextAreaElement, value: " + value);
         item.value = <string>value;
     } else if ((item instanceof HTMLInputElement) && (item.type === "checkbox")) {
-        console.debug("name: " + name + ", HTMLInputElement, value: " + value);
-        if (value === true)  {
+        if (value === true) {
             item.checked = true;
         } else if (value === false) {
             item.checked = false;
-//        } else if (Array.isArray(value)) {
         } else {
-          item.value = <string>value;
+            item.value = <string>value;
         }
     } else if (item instanceof HTMLSelectElement) {
-        console.debug("name: " + name + ", HTMLSelectElement, value: " + value);
         const options = item.options;
         if (Array.isArray(value)) {
             const valuesSet = new Set(value);
@@ -82,11 +89,7 @@ function setFormFieldValue(form: HTMLFormElement, name: string, value: string | 
             }
         }
     } else if (item instanceof HTMLInputElement) {
-        console.debug("name: " + name + ", HTMLInputElement, value: " + value);
-      item.value = <string>value;
-    } else {
-        console.debug("non reconnu");
-        console.warn(item);
+        item.value = <string>value;
     }
 
 }

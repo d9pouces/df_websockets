@@ -14,7 +14,7 @@
             crossorigin="anonymous"></script>
 </head>
 <body>
-<button {% js_call 'demo.trigger_signals' on='click' %}>Trigger signals</button>
+<h1>Available Javascripts signals </h1>
 <div class="accordion" id="mainAccordion">
 
 
@@ -169,11 +169,13 @@
     <div class="accordion-item">
         <h2 class="accordion-header" id="heading_html_replace_with">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapse_html_replace_with" aria-expanded="false" aria-controls="collapse_html_replace_with">
+                    data-bs-target="#collapse_html_replace_with" aria-expanded="false"
+                    aria-controls="collapse_html_replace_with">
                 "html.replace_with"
             </button>
         </h2>
-        <div id="collapse_html_replace_with" class="accordion-collapse collapse" aria-labelledby="heading_html_replace_with"
+        <div id="collapse_html_replace_with" class="accordion-collapse collapse"
+             aria-labelledby="heading_html_replace_with"
              data-bs-parent="#mainAccordion">
             <div class="accordion-body">
                 <ul class="list-group">
@@ -259,7 +261,8 @@
     <div class="accordion-item">
         <h2 class="accordion-header" id="heading_html_add_class">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapse_html_add_class" aria-expanded="false" aria-controls="collapse_html_add_class">
+                    data-bs-target="#collapse_html_add_class" aria-expanded="false"
+                    aria-controls="collapse_html_add_class">
                 "html.add_class"
             </button>
         </h2>
@@ -285,15 +288,17 @@
         </div>
     </div>
 
-    
+
     <div class="accordion-item">
         <h2 class="accordion-header" id="heading_html_remove_class">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapse_html_remove_class" aria-expanded="false" aria-controls="collapse_html_remove_class">
+                    data-bs-target="#collapse_html_remove_class" aria-expanded="false"
+                    aria-controls="collapse_html_remove_class">
                 "html.remove_class"
             </button>
         </h2>
-        <div id="collapse_html_remove_class" class="accordion-collapse collapse" aria-labelledby="heading_html_remove_class"
+        <div id="collapse_html_remove_class" class="accordion-collapse collapse"
+             aria-labelledby="heading_html_remove_class"
              data-bs-parent="#mainAccordion">
             <div class="accordion-body">
                 <ul class="list-group">
@@ -315,15 +320,17 @@
         </div>
     </div>
 
-    
+
     <div class="accordion-item">
         <h2 class="accordion-header" id="heading_html_remove_attr">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapse_html_remove_attr" aria-expanded="false" aria-controls="collapse_html_remove_attr">
+                    data-bs-target="#collapse_html_remove_attr" aria-expanded="false"
+                    aria-controls="collapse_html_remove_attr">
                 "html.remove_attr"
             </button>
         </h2>
-        <div id="collapse_html_remove_attr" class="accordion-collapse collapse" aria-labelledby="heading_html_remove_attr"
+        <div id="collapse_html_remove_attr" class="accordion-collapse collapse"
+             aria-labelledby="heading_html_remove_attr"
              data-bs-parent="#mainAccordion">
             <div class="accordion-body">
                 <ul class="list-group">
@@ -334,7 +341,8 @@
                         </button>
                     </li>
                     <li class="remove_attr list-group-item">
-                         <label for="html_remove_attr">It will be unchecked</label> <input type="checkbox" checked id="html_remove_attr">
+                        <label for="html_remove_attr">It will be unchecked</label> <input type="checkbox" checked
+                                                                                          id="html_remove_attr">
                     </li>
                 </ul>
 
@@ -342,15 +350,17 @@
         </div>
     </div>
 
-    
+
     <div class="accordion-item">
         <h2 class="accordion-header" id="heading_html_add_attribute">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapse_html_add_attribute" aria-expanded="false" aria-controls="collapse_html_add_attribute">
+                    data-bs-target="#collapse_html_add_attribute" aria-expanded="false"
+                    aria-controls="collapse_html_add_attribute">
                 "html.add_attribute"
             </button>
         </h2>
-        <div id="collapse_html_add_attribute" class="accordion-collapse collapse" aria-labelledby="heading_html_add_attribute"
+        <div id="collapse_html_add_attribute" class="accordion-collapse collapse"
+             aria-labelledby="heading_html_add_attribute"
              data-bs-parent="#mainAccordion">
             <div class="accordion-body">
                 <ul class="list-group">
@@ -361,7 +371,8 @@
                         </button>
                     </li>
                     <li class="add_attribute list-group-item">
-                         <label for="html_add_attribute">It will be checked</label> <input type="checkbox" id="html_add_attribute">
+                        <label for="html_add_attribute">It will be checked</label> <input type="checkbox"
+                                                                                          id="html_add_attribute">
                     </li>
                 </ul>
 
@@ -369,29 +380,35 @@
         </div>
     </div>
 
-    
+
     <div class="accordion-item">
         <h2 class="accordion-header" id="heading_html_boolean_attribute">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapse_html_boolean_attribute" aria-expanded="false" aria-controls="collapse_html_boolean_attribute">
+                    data-bs-target="#collapse_html_boolean_attribute" aria-expanded="false"
+                    aria-controls="collapse_html_boolean_attribute">
                 "html.boolean_attribute"
             </button>
         </h2>
-        <div id="collapse_html_boolean_attribute" class="accordion-collapse collapse" aria-labelledby="heading_html_boolean_attribute"
+        <div id="collapse_html_boolean_attribute" class="accordion-collapse collapse"
+             aria-labelledby="heading_html_boolean_attribute"
              data-bs-parent="#mainAccordion">
             <div class="accordion-body">
                 <ul class="list-group boolean_attribute">
                     <li class="list-group-item">
-                        <button class="btn btn-success" {% js_call 'demo.html.boolean_attribute' on='click' %}>Click here to
+                        <button class="btn btn-success" {% js_call 'demo.html.boolean_attribute' on='click' %}>Click
+                            here to
                             trigger
                             the signal from the server.
                         </button>
                     </li>
                     <li class="true list-group-item">
-                         <label for="html_boolean_attribute_true">It will be checked</label> <input type="checkbox" id="html_boolean_attribute_true">
+                        <label for="html_boolean_attribute_true">It will be checked</label> <input type="checkbox"
+                                                                                                   id="html_boolean_attribute_true">
                     </li>
                     <li class="false list-group-item">
-                         <label for="html_boolean_attribute_false">It will be unchecked</label> <input type="checkbox" id="html_boolean_attribute_false" checked>
+                        <label for="html_boolean_attribute_false">It will be unchecked</label> <input type="checkbox"
+                                                                                                      id="html_boolean_attribute_false"
+                                                                                                      checked>
                     </li>
                 </ul>
 
@@ -400,7 +417,6 @@
     </div>
 
 
-    
     <div class="accordion-item">
         <h2 class="accordion-header" id="heading_html_text">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
@@ -419,10 +435,10 @@
                         </button>
                     </li>
                     <li class="text list-group-item">
-                         <i class="original">This text will be replaced.</i>
+                        <i class="original">This text will be replaced.</i>
                     </li>
                     <li class="text list-group-item">
-                         <i class="original">This text will be replaced.</i>
+                        <i class="original">This text will be replaced.</i>
                     </li>
                 </ul>
 
@@ -430,20 +446,23 @@
         </div>
     </div>
 
-    
+
     <div class="accordion-item">
         <h2 class="accordion-header" id="heading_html_download_file">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapse_html_download_file" aria-expanded="false" aria-controls="collapse_html_download_file">
+                    data-bs-target="#collapse_html_download_file" aria-expanded="false"
+                    aria-controls="collapse_html_download_file">
                 "html.download_file"
             </button>
         </h2>
-        <div id="collapse_html_download_file" class="accordion-collapse collapse" aria-labelledby="heading_html_download_file"
+        <div id="collapse_html_download_file" class="accordion-collapse collapse"
+             aria-labelledby="heading_html_download_file"
              data-bs-parent="#mainAccordion">
             <div class="accordion-body">
                 <ul class="list-group">
                     <li class="list-group-item">
-                        <button class="btn btn-success" {% js_call 'demo.html.download_file' on='click' %}>A file named "django.png" will be downloaded, as required by the server.
+                        <button class="btn btn-success" {% js_call 'demo.html.download_file' on='click' %}>A file named
+                            "django.png" will be downloaded, as required by the server.
                         </button>
                     </li>
                 </ul>
@@ -452,7 +471,7 @@
         </div>
     </div>
 
-    
+
     <div class="accordion-item">
         <h2 class="accordion-header" id="heading_html_focus">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
@@ -472,7 +491,38 @@
                     </li>
                     <li class="list-group-item">
                         <label for="html_focus"></label>
-                        <input type="text" class="focus form-control" value="The focus will be on this field" id="html_focus">
+                        <input type="text" class="focus form-control" value="The focus will be on this field"
+                               id="html_focus">
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="heading_html_forms_set">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapse_html_forms_set" aria-expanded="false"
+                    aria-controls="collapse_html_forms_set">
+                "html.forms.set"
+            </button>
+        </h2>
+        <div id="collapse_html_forms_set" class="accordion-collapse collapse" aria-labelledby="heading_html_forms_set"
+             data-bs-parent="#mainAccordion">
+            <div class="accordion-body">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <button class="btn btn-success" {% js_call 'demo.html.forms.set' on='click' %}>Click here to
+                            trigger
+                            the signal from the server.
+                        </button>
+                    </li>
+                    <li class="list-group-item">
+                        <label for="html_forms_set"></label>
+                        <input type="text" class="focus form-control" value="The focus will be on this field"
+                               id="html_forms_set">
                     </li>
                 </ul>
 
@@ -482,7 +532,10 @@
 
 </div>
 
-<h3>"html.forms.set"</h3>
+<button class="btn btn-success" {% js_call 'demo.html.forms.set' on='click' %}>Click here to
+    trigger
+    the signal from the server.
+</button>
 <form class="forms-set">
     <ul>
         <li><textarea cols="30" rows="8" name="textarea"></textarea></li>
@@ -497,7 +550,14 @@
             <input type="checkbox" name="checkbox" value="3">3 (will be checked)
         </li>
         <li>
-            <input type="checkbox" name="single-checkbox" value="1"> single checkbox (will be checked)
+            <input type="checkbox" name="single-checkbox" value="1">
+            <input type="checkbox" name="single-checkbox" value="2">
+            <input type="radio" name="single-checkbox" value="3"> (all checkboxes will be checked)
+        </li>
+        <li>
+            <input type="checkbox" name="no-single-checkbox" value="1" checked>
+            <input type="checkbox" name="no-single-checkbox" value="2">
+            <input type="radio" name="no-single-checkbox" value="3" checked> (all checkboxes will be unchecked)
         </li>
         <li><select id="simple" name="simple">
             <option value="banana">Big, beautiful yellow banana</option>
@@ -506,26 +566,26 @@
         </select></li>
         <li><select id="groups" name="groups">
             <optgroup label="fruits">
-                <option>Banana</option>
-                <option selected>Cherry</option>
-                <option>Lemon</option>
+                <option value="banana">Banana</option>
+                <option value="cherry" selected>Cherry</option>
+                <option value="lemon">Lemon</option>
             </optgroup>
             <optgroup label="vegetables">
-                <option>Carrot</option>
-                <option>Eggplant</option>
-                <option>Potato</option>
+                <option value="carrot">Carrot</option>
+                <option value="eggplant">Eggplant</option>
+                <option value="potato">Potato</option>
             </optgroup>
         </select></li>
         <li><select id="multi" name="multi" multiple size="2">
             <optgroup label="fruits">
-                <option>Banana</option>
-                <option selected>Cherry</option>
-                <option>Lemon</option>
+                <option value="banana">Banana</option>
+                <option value="cherry" selected>Cherry</option>
+                <option value="lemon">Lemon</option>
             </optgroup>
             <optgroup label="vegetables">
-                <option>Carrot</option>
-                <option>Eggplant</option>
-                <option>Potato</option>
+                <option value="carrot">Carrot</option>
+                <option value="eggplant">Eggplant</option>
+                <option value="potato">Potato</option>
             </optgroup>
         </select></li>
     </ul>

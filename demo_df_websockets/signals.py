@@ -5,7 +5,7 @@ from df_websockets.tasks import trigger, BROADCAST
 
 
 @signal(path="demo.html.after", is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_after(window_info):
     trigger(
         window_info,
         "html.after",
@@ -16,7 +16,7 @@ def my_first_signal(window_info):
 
 
 @signal(path="demo.html.append", is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_append(window_info):
     trigger(
         window_info,
         "html.append",
@@ -27,7 +27,7 @@ def my_first_signal(window_info):
 
 
 @signal(path="demo.html.prepend", is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_prepend(window_info):
     trigger(
         window_info,
         "html.prepend",
@@ -38,7 +38,7 @@ def my_first_signal(window_info):
 
 
 @signal(path="demo.html.before", is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_before(window_info):
     trigger(
         window_info,
         "html.before",
@@ -49,7 +49,7 @@ def my_first_signal(window_info):
 
 
 @signal(path="demo.html.content", is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_content(window_info):
     trigger(
         window_info,
         "html.content",
@@ -60,7 +60,7 @@ def my_first_signal(window_info):
 
 
 @signal(path='demo.html.replace_with', is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_replace_with(window_info):
     trigger(
         window_info,
         "html.replace_with",
@@ -71,7 +71,7 @@ def my_first_signal(window_info):
 
 
 @signal(path='demo.html.empty', is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_empty(window_info):
     trigger(
         window_info,
         "html.empty",
@@ -81,7 +81,7 @@ def my_first_signal(window_info):
 
 
 @signal(path='demo.html.remove', is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_remove(window_info):
     trigger(
         window_info,
         "html.remove",
@@ -91,7 +91,7 @@ def my_first_signal(window_info):
 
 
 @signal(path='demo.html.add_class', is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_add_class(window_info):
     trigger(
         window_info,
         "html.add_class",
@@ -102,7 +102,7 @@ def my_first_signal(window_info):
 
 
 @signal(path='demo.html.remove_class', is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_remove_class(window_info):
     trigger(
         window_info,
         "html.remove_class",
@@ -113,7 +113,7 @@ def my_first_signal(window_info):
 
 
 @signal(path='demo.html.remove_attr', is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_remove_attr(window_info):
     trigger(
         window_info,
         "html.remove_attr",
@@ -124,7 +124,7 @@ def my_first_signal(window_info):
 
 
 @signal(path='demo.html.add_attribute', is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_add_attribute(window_info):
     trigger(
         window_info,
         "html.add_attribute",
@@ -136,7 +136,7 @@ def my_first_signal(window_info):
 
 
 @signal(path='demo.html.boolean_attribute', is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_boolean_attribute(window_info):
     trigger(
         window_info,
         "html.boolean_attribute",
@@ -156,7 +156,7 @@ def my_first_signal(window_info):
 
 
 @signal(path='demo.html.text', is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_text(window_info):
     trigger(
         window_info,
         "html.text",
@@ -167,7 +167,7 @@ def my_first_signal(window_info):
 
 
 @signal(path='demo.html.download_file', is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_download_file(window_info):
     trigger(
         window_info,
         "html.download_file",
@@ -178,7 +178,7 @@ def my_first_signal(window_info):
 
 
 @signal(path='demo.html.focus', is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+def demo_html_focus(window_info):
     trigger(
         window_info,
         "html.focus",
@@ -187,8 +187,8 @@ def my_first_signal(window_info):
     )
 
 
-@signal(path="demo.trigger_signals", is_allowed_to=everyone, queue="celery")
-def my_first_signal(window_info):
+@signal(path='demo.html.forms.set', is_allowed_to=everyone, queue="celery")
+def demo_html_forms_set(window_info):
     trigger(
         window_info,
         "html.forms.set",
@@ -199,6 +199,9 @@ def my_first_signal(window_info):
             {"name": "radio", "value": "3"},
             {"name": "checkbox", "value": ["3"]},
             {"name": "single-checkbox", "value": True},
+            {"name": "no-single-checkbox", "value": False},
             {"name": "simple", "value": "lemon"},
+            {"name": "groups", "value": "potato"},
+            {"name": "multi", "value": ["lemon", "eggplant"]},
         ]
     )
