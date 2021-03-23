@@ -14,7 +14,7 @@
 //                                                                             /
 ////////////////////////////////////////////////////////////////////////////////
 
-import {setFormInputValue} from "./forms";
+import {htmlFormsSet, htmlFormsSetAll} from "./forms";
 import {
     htmlAfter,
     htmlAppend,
@@ -71,11 +71,8 @@ const htmlDownloadFile = (opts) => {
 const htmlFocus = (opts) => {
     const elt = document.querySelector(opts.selector);
     if (elt) {
-        elt.focus();
+        elt.focus({preventScroll: false});
     }
-};
-const htmlFormsSet = (opts) => {
-    setFormInputValue(opts.selector, opts.value);
 };
 
 function connectSignals() {

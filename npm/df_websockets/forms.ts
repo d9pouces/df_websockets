@@ -47,45 +47,72 @@ export function serializeForm(form: HTMLFormElement) {
     return serialized;
 }
 
-
-export function setFormInputValue(selector: string, value: string | Array<string> | boolean) {
-    /*
-    Change the current value of a form input (designed by a standard selector, like "[name=title]").
-
-    * if the input is a checkbox or a radio field, then its check state is changed
-    * if the field is a select field, then all options with the given value (can be a string or a list of strings)
-        are selected
-    * otherwise, the value of the field is set to the given value.
-     */
-
-    document.querySelectorAll(selector).forEach(
-        (field: HTMLElement) => {
-            if ((field.tagName === "INPUT") || (field.tagName == "TEXTAREA")) {
-                if (((<HTMLInputElement>field).type === "checkbox") || ((<HTMLInputElement>field).type === "radio")) {
-                    (<HTMLInputElement>field).checked = !!value;
-                } else {
-                    (<HTMLInputElement | HTMLTextAreaElement>field).value = <string>value;
-                }
-            } else if (field.tagName === "SELECT") {
-                const options = (<HTMLSelectElement>field).options;
-                if (Array.isArray(value)) {
-                    for (let i = 0; i < options.length; i++) {
-                        for (let j = 0; j < value.length; j++) {
-                            if (options[i].value === value[j]) {
-                                options[i].selected = true;
-                            }
-                        }
-                    }
-                } else {
-                    for (let i = 0; i < options.length; i++) {
-                        if (options[i].value === value) {
-                            options[i].selected = true;
-                        }
-                    }
-                }
+function setFormFieldValue(form: HTMLFormElement, name: string, value: string | boolean | Array<string>) {
+    const item = form.elements.namedItem(name);
+    if (item === null) {
+        return;
+    }
+    else if (item instanceof RadioNodeList) {
+        console.debug("name: " + name + ", RadioNodeList, value: " + value);
+        (<RadioNodeList>item).value = <string>value;
+    } else if (item instanceof HTMLTextAreaElement) {
+        console.debug("name: " + name + ", HTMLTextAreaElement, value: " + value);
+        item.value = <string>value;
+    } else if ((item instanceof HTMLInputElement) && (item.type === "checkbox")) {
+        console.debug("name: " + name + ", HTMLInputElement, value: " + value);
+        if (value === true)  {
+            item.checked = true;
+        } else if (value === false) {
+            item.checked = false;
+//        } else if (Array.isArray(value)) {
+        } else {
+          item.value = <string>value;
+        }
+    } else if (item instanceof HTMLSelectElement) {
+        console.debug("name: " + name + ", HTMLSelectElement, value: " + value);
+        const options = item.options;
+        if (Array.isArray(value)) {
+            const valuesSet = new Set(value);
+            for (let i = 0; i < options.length; i++) {
+                options[i].selected = valuesSet.has(options[i].value);
+            }
+        } else {
+            for (let i = 0; i < options.length; i++) {
+                options[i].selected = options[i].value === value;
             }
         }
-    )
+    } else if (item instanceof HTMLInputElement) {
+        console.debug("name: " + name + ", HTMLInputElement, value: " + value);
+      item.value = <string>value;
+    } else {
+        console.debug("non reconnu");
+        console.warn(item);
+    }
+
+}
+
+
+interface formSingleValue {
+    name: string;
+    value: string | Array<string> | boolean;
+}
+
+interface formValueList {
+    selector: string;
+    values: Array<formSingleValue>;
+}
+
+export function htmlFormsSet(opts: formValueList) {
+    document.querySelectorAll(opts.selector).forEach(
+        (form: HTMLFormElement) => {
+            opts.values.forEach(
+                (values) => {
+                    setFormFieldValue(form, values.name, values.value);
+                }
+            )
+
+        }
+    );
 }
 
 

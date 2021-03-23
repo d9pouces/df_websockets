@@ -8,3 +8,9 @@
     color: darkgreen;
     font-weight: bold;
 }
+h3, ul {
+    margin: 0;
+}
+h2.accordion-header button {
+    padding: 0.25rem 1.25rem;
+}
