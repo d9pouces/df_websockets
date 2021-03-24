@@ -25,8 +25,6 @@ Use these functions for:
     shortcut (:meth:`df_websockets.tasks.trigger`)
 
 """
-import base64
-import hashlib
 import json
 import logging
 import os
@@ -38,7 +36,6 @@ from asgiref.sync import async_to_sync
 from celery import shared_task
 from channels import DEFAULT_CHANNEL_LAYER
 from channels.layers import get_channel_layer
-from df_websockets.utils import valid_topic_name
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -54,6 +51,7 @@ from df_websockets.decorators import (
     SignalConnection,
 )
 from df_websockets.load import load_celery
+from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
 logger = logging.getLogger("df_websockets.signals")

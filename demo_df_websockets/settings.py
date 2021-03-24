@@ -43,7 +43,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [("localhost", 6379)],
         },
     },
 }
@@ -58,20 +58,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 ASGI_APPLICATION = "df_websockets.routing.application"
-CELERY_APP = "df_websockets"
-# the celery application
-CELERY_DEFAULT_QUEUE = "celery"
 WEBSOCKET_REDIS_CONNECTION = {
     "host": "localhost",
     "port": 6379,
-    "db": 3,
+    "db": 1,
     "password": "",
 }
-WEBSOCKET_REDIS_EXPIRE = 36000
-WEBSOCKET_REDIS_PREFIX = "ws"
-WEBSOCKET_SIGNAL_DECODER = "json.JSONDecoder"
-WEBSOCKET_SIGNAL_ENCODER = "django.core.serializers.json.DjangoJSONEncoder"
-WEBSOCKET_TOPIC_SERIALIZER = "df_websockets.topics.serialize_topic"
 WINDOW_INFO_MIDDLEWARES = [
     "df_websockets.ws_middleware.WindowKeyMiddleware",
     "df_websockets.ws_middleware.DjangoAuthMiddleware",
@@ -111,36 +103,6 @@ DATABASES = {
     }
 }
 
-# Password validation
-# https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
-
-# Internationalization
-# https://docs.djangoproject.com/en/3.1/topics/i18n/
-
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
-
-USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
