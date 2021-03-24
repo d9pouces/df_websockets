@@ -309,10 +309,10 @@
                         </button>
                     </li>
                     <li class="remove_class list-group-item text-danger">
-                        A CSS class will be added.
+                        A CSS class "text-danger" will be removed.
                     </li>
                     <li class="remove_class list-group-item text-danger">
-                        A CSS class will be added.
+                        A CSS class "text-danger" will be removed.
                     </li>
                 </ul>
 
@@ -520,9 +520,63 @@
                         </button>
                     </li>
                     <li class="list-group-item">
-                        <label for="html_forms_set"></label>
-                        <input type="text" class="focus form-control" value="The focus will be on this field"
-                               id="html_forms_set">
+                        <form class="forms-set">
+                            <ul>
+                                <li><textarea cols="30" rows="8" name="textarea"></textarea></li>
+                                <li>
+                                    <input type="radio" name="radio" value="1" checked="checked">1
+                                    <input type="radio" name="radio" value="2">2
+                                    <input type="radio" name="radio" value="3">3 (will be selected)
+                                </li>
+                                <li>
+                                    <input type="checkbox" name="checkbox" value="1" checked="checked">1 (will be
+                                    unchecked)
+                                    <input type="checkbox" name="checkbox" value="2">2
+                                    <input type="checkbox" name="checkbox" value="3">3 (will be checked)
+                                </li>
+                                <li>
+                                    <input type="checkbox" name="single-checkbox" value="1">
+                                    <input type="checkbox" name="single-checkbox" value="2">
+                                    <input type="radio" name="single-checkbox" value="3"> (all checkboxes will be
+                                    checked)
+                                </li>
+                                <li>
+                                    <input type="checkbox" name="no-single-checkbox" value="1" checked>
+                                    <input type="checkbox" name="no-single-checkbox" value="2">
+                                    <input type="radio" name="no-single-checkbox" value="3" checked> (all checkboxes
+                                    will be unchecked)
+                                </li>
+                                <li><select id="simple" name="simple">
+                                    <option value="banana">Big, beautiful yellow banana</option>
+                                    <option value="cherry">Succulent, juicy cherry</option>
+                                    <option value="lemon">Sharp, powerful lemon (will be selected)</option>
+                                </select></li>
+                                <li><select id="groups" name="groups">
+                                    <optgroup label="fruits">
+                                        <option value="banana">Banana</option>
+                                        <option value="cherry" selected>Cherry</option>
+                                        <option value="lemon">Lemon</option>
+                                    </optgroup>
+                                    <optgroup label="vegetables">
+                                        <option value="carrot">Carrot</option>
+                                        <option value="eggplant">Eggplant</option>
+                                        <option value="potato">Potato</option>
+                                    </optgroup>
+                                </select></li>
+                                <li><select id="multi" name="multi" multiple size="2">
+                                    <optgroup label="fruits">
+                                        <option value="banana">Banana</option>
+                                        <option value="cherry" selected>Cherry</option>
+                                        <option value="lemon">Lemon</option>
+                                    </optgroup>
+                                    <optgroup label="vegetables">
+                                        <option value="carrot">Carrot</option>
+                                        <option value="eggplant">Eggplant</option>
+                                        <option value="potato">Potato</option>
+                                    </optgroup>
+                                </select></li>
+                            </ul>
+                        </form>
                     </li>
                 </ul>
 
@@ -531,65 +585,6 @@
     </div>
 
 </div>
-
-<button class="btn btn-success" {% js_call 'demo.html.forms.set' on='click' %}>Click here to
-    trigger
-    the signal from the server.
-</button>
-<form class="forms-set">
-    <ul>
-        <li><textarea cols="30" rows="8" name="textarea"></textarea></li>
-        <li>
-            <input type="radio" name="radio" value="1" checked="checked">1
-            <input type="radio" name="radio" value="2">2
-            <input type="radio" name="radio" value="3">3 (will be selected)
-        </li>
-        <li>
-            <input type="checkbox" name="checkbox" value="1" checked="checked">1 (will be unchecked)
-            <input type="checkbox" name="checkbox" value="2">2
-            <input type="checkbox" name="checkbox" value="3">3 (will be checked)
-        </li>
-        <li>
-            <input type="checkbox" name="single-checkbox" value="1">
-            <input type="checkbox" name="single-checkbox" value="2">
-            <input type="radio" name="single-checkbox" value="3"> (all checkboxes will be checked)
-        </li>
-        <li>
-            <input type="checkbox" name="no-single-checkbox" value="1" checked>
-            <input type="checkbox" name="no-single-checkbox" value="2">
-            <input type="radio" name="no-single-checkbox" value="3" checked> (all checkboxes will be unchecked)
-        </li>
-        <li><select id="simple" name="simple">
-            <option value="banana">Big, beautiful yellow banana</option>
-            <option value="cherry">Succulent, juicy cherry</option>
-            <option value="lemon">Sharp, powerful lemon (will be selected)</option>
-        </select></li>
-        <li><select id="groups" name="groups">
-            <optgroup label="fruits">
-                <option value="banana">Banana</option>
-                <option value="cherry" selected>Cherry</option>
-                <option value="lemon">Lemon</option>
-            </optgroup>
-            <optgroup label="vegetables">
-                <option value="carrot">Carrot</option>
-                <option value="eggplant">Eggplant</option>
-                <option value="potato">Potato</option>
-            </optgroup>
-        </select></li>
-        <li><select id="multi" name="multi" multiple size="2">
-            <optgroup label="fruits">
-                <option value="banana">Banana</option>
-                <option value="cherry" selected>Cherry</option>
-                <option value="lemon">Lemon</option>
-            </optgroup>
-            <optgroup label="vegetables">
-                <option value="carrot">Carrot</option>
-                <option value="eggplant">Eggplant</option>
-                <option value="potato">Potato</option>
-            </optgroup>
-        </select></li>
-    </ul>
-</form>
 
 
 </body>
