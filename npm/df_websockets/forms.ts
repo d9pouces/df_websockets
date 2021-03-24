@@ -56,7 +56,7 @@ function setFormFieldValue(form: HTMLFormElement, name: string, value: string | 
             item.forEach((input: HTMLInputElement) => {
                 input.checked = value
             });
-        } else  if (Array.isArray(value)) {
+        } else if (Array.isArray(value)) {
             const valuesSet = new Set(value);
             item.forEach((input: HTMLInputElement) => {
                 input.checked = valuesSet.has(input.value);
