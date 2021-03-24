@@ -85,13 +85,13 @@ _signal_encoder = import_string(ws_settings.WEBSOCKET_SIGNAL_ENCODER)
 _topic_serializer = import_string(ws_settings.WEBSOCKET_TOPIC_SERIALIZER)
 
 __values = {
-    "host": settings.WEBSOCKET_REDIS_CONNECTION["host"],
+    "host": settings.WEBSOCKET_REDIS_CONNECTION.get("host", "localhost"),
     "port": ":%s" % settings.WEBSOCKET_REDIS_CONNECTION["port"]
-    if settings.WEBSOCKET_REDIS_CONNECTION["port"]
+    if settings.WEBSOCKET_REDIS_CONNECTION.get("port")
     else "",
-    "db": settings.WEBSOCKET_REDIS_CONNECTION["db"],
+    "db": settings.WEBSOCKET_REDIS_CONNECTION.get("db", 1),
     "password": ":%s@" % settings.WEBSOCKET_REDIS_CONNECTION["password"]
-    if settings.WEBSOCKET_REDIS_CONNECTION["password"]
+    if settings.WEBSOCKET_REDIS_CONNECTION.get("password")
     else "",
 }
 redis_connection_pool = ConnectionPool.from_url(

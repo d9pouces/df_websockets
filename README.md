@@ -19,11 +19,11 @@ Requirements and installation
 
 df_config works with:
 
-  * Python 3.6+,
-  * django 2.0+,
-  * celery 4.0+,
+  * Python >= 3.6,
   * redis >= 5.0,
-  * django-channels 2.0+,
+  * django >= 2.0,
+  * celery >= 4.0,
+  * django-channels >= 2.0,
   * channels_redis.
 
 You also need a working [redis server](https://redis.io) and [Celery setup](https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html).
@@ -34,48 +34,43 @@ python -m pip install df_websockets
 
 In your settings, if you do not use `df_config`, you must add the following values:
 ```python
-ASGI_APPLICATION = "df_websockets.routing.application"
 # the ASGI application to use with gunicorn or daphne
+ASGI_APPLICATION = "df_websockets.routing.application"
+# add the required Middleware
 MIDDLEWARES = [..., "df_websockets.middleware.WebsocketMiddleware", ...]
 INSTALLED_APPS = [..., "channels", "df_websockets", ...]
-# a required middleware
-CELERY_APP = "df_websockets"
-# the celery application
-CELERY_DEFAULT_QUEUE = "celery"
-# the default queue to use
-WEBSOCKET_REDIS_CONNECTION = {'host': 'localhost', 'port': 6379, 'db': 3, 'password': ''}
-WEBSOCKET_REDIS_EXPIRE = 3600
-WEBSOCKET_REDIS_PREFIX = "ws"
-WEBSOCKET_SIGNAL_DECODER = "json.JSONDecoder"
-WEBSOCKET_SIGNAL_ENCODER = "django.core.serializers.json.DjangoJSONEncoder"
-WEBSOCKET_TOPIC_SERIALIZER = "df_websockets.topics.serialize_topic"
-# equivalent to MIDDLEWARES, but for websockets
+#
+WEBSOCKET_REDIS_CONNECTION = {'host': 'localhost', 'port': 6379, 'db': 1, 'password': ''}
+# equivalent to MIDDLEWARES, but for websocket connections
 WINDOW_INFO_MIDDLEWARES = ["df_websockets.ws_middleware.WindowKeyMiddleware", "df_websockets.ws_middleware.DjangoAuthMiddleware", "df_websockets.ws_middleware.Djangoi18nMiddleware", "df_websockets.ws_middleware.BrowserMiddleware",]
 # the endpoint for the websockets
 WEBSOCKET_URL = "/ws/"
-# a channel layer
+# a channel layer, required by channels_redis
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": [('localhost', 6379)],
         },
     },
 }
 ```
 If you use `df_config` and you use a local Redis, you have nothing to do: settings are automatically set and everything is working as soon as a Redis is running on your machine.
 
+Now, include `js/df_websockets.min.js` in your HTML and call `df_websockets.tasks.set_websocket_topics(request)` somewhere in the Django view.
+A bidirectionnal websocket connection will be established in your page.
+
 You can start a Celery worker and the development server:
 ```bash
-python manage.py worker 
-python manage.py runserver -Q celery,slow,fast
+python manage.py worker -Q celery
+python manage.py runserver
 ```
 
 basic usage
 -----------
 
 A _signal_ is a string attached to Python or Javascript functions. When this signal is triggered, all these functions are called.
-Of course, you can target the platforms on which the functions will be executed: the server (for Python code) or any set of browser windows.
+Of course, you can target the platforms on which the functions will be executed: the server (for Python code) or chosen browser windows.
 
 First, we connect our code to the signal `"myproject.first_signal"`.
 ```python
@@ -122,7 +117,8 @@ def second_signal(window_info):
 ```
 
 In this case, the `to` parameter targets both the server and the window.
-
+You can even open a shell and call `df_websockets.tasks.trigger(None, 'myproject.first_signal', to=[BROADCAST], content="hello from a shell")`.
+All open windows will react.
 
 topics
 ------

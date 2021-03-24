@@ -16,18 +16,4 @@
 
 from setuptools import setup
 
-setup(
-    test_suite="test_df_websockets",
-    install_requires=[
-        "asgiref",
-        "celery",
-        "channels",
-        "channels_redis",
-        "df_config",
-        "django",
-        "pyasn1>=0.4.8",
-        "redis",
-    ],
-    setup_requires=[],
-    tests_require=["tox"],
-)
+setup()
