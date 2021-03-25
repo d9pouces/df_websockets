@@ -68,7 +68,7 @@ import logging
 import random
 import re
 from inspect import signature
-from typing import Type
+from typing import Dict, List, Type
 
 from django import forms
 
@@ -77,8 +77,8 @@ from df_websockets.utils import SerializedForm
 
 logger = logging.getLogger("df_websockets.signals")
 
-REGISTERED_SIGNALS = {}
-REGISTERED_FUNCTIONS = {}
+REGISTERED_SIGNALS = {}  # type: Dict[str, List[Connection]]
+REGISTERED_FUNCTIONS = {}  # type: Dict[str, Connection]
 
 
 class DynamicQueueName:
@@ -344,7 +344,7 @@ class SignalConnection(Connection):
         REGISTERED_SIGNALS.setdefault(self.path, []).append(self)
 
     def call(self, window_info, **kwargs):
-        from df_websockets.tasks import trigger_signal, SERVER
+        from df_websockets.tasks import SERVER, trigger_signal
 
         trigger_signal(window_info, self.path, to=SERVER, kwargs=kwargs)
 

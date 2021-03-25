@@ -15,6 +15,7 @@
 # ##############################################################################
 
 import json
+from typing import Dict, List, Tuple
 
 from df_websockets import tasks as tasks_module
 
@@ -53,8 +54,10 @@ class SignalQueue:
 
     def __init__(self, immediate_execution: bool = False):
         self.immediate = immediate_execution
-        self.ws_signals = {}  # javascript_signals[client] = [signal1, signal2, …]
-        self.python_signals = {}  # javascript_signals[queue] = [signal1, signal2, …]
+        self.ws_signals = {}  # type: Dict[str, List[Tuple[str, Dict]]]
+        # javascript_signals[client] = [signal1, signal2, …]
+        self.python_signals = {}  # type: Dict[str, List[Tuple[str, Dict]]]
+        # javascript_signals[queue] = [signal1, signal2, …]
         self._old_async_method = None
         self._old_ws_function = None
 

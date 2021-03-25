@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+from typing import List
+
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -24,7 +26,7 @@ SECRET_KEY = "=$@-4on)b3h@-6s#e-sks3!v)10&rq64+p0#c$)8-8_%=zzel("
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = []  # type: List[str]
 
 # Application definition
 

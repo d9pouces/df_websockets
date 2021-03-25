@@ -26,11 +26,8 @@ from django.urls import path
 from df_websockets import ws_settings
 from df_websockets.consumers import DFConsumer
 
-consumer = DFConsumer
-if hasattr(DFConsumer, "as_asgi"):
-    consumer = DFConsumer.as_asgi()
 websocket_urlpatterns = [
-    path(ws_settings.WEBSOCKET_URL[1:], consumer),
+    path(ws_settings.WEBSOCKET_URL[1:], DFConsumer.as_asgi()),
 ]
 
 mapping = {

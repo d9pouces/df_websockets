@@ -44,10 +44,10 @@ from redis import ConnectionPool, StrictRedis
 
 from df_websockets import ws_settings
 from df_websockets.decorators import (
-    DynamicQueueName,
-    FunctionConnection,
     REGISTERED_FUNCTIONS,
     REGISTERED_SIGNALS,
+    DynamicQueueName,
+    FunctionConnection,
     SignalConnection,
 )
 from df_websockets.load import load_celery

@@ -1,7 +1,7 @@
 from django.conf import settings
 
-from df_websockets.decorators import signal, everyone
-from df_websockets.tasks import trigger, BROADCAST
+from df_websockets.decorators import everyone, signal
+from df_websockets.tasks import BROADCAST, trigger
 
 
 @signal(path="demo.html.after", is_allowed_to=everyone)

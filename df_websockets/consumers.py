@@ -20,17 +20,17 @@ from typing import Optional, Union
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
+from django import http
 from django.core.exceptions import ImproperlyConfigured
+from django.core.handlers.base import BaseHandler
+from django.http import HttpRequest, HttpResponse, QueryDict
+from django.utils.module_loading import import_string
 
 from df_websockets import ws_settings
 from df_websockets.middleware import WebsocketMiddleware
 from df_websockets.tasks import SERVER, _trigger_signal, get_websocket_redis_connection
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
-from django import http
-from django.core.handlers.base import BaseHandler
-from django.http import HttpRequest, HttpResponse, QueryDict
-from django.utils.module_loading import import_string
 
 logger = logging.getLogger("df_websockets.signals")
 _signal_encoder = import_string(ws_settings.WEBSOCKET_SIGNAL_ENCODER)
@@ -40,7 +40,10 @@ signal_decoder = import_string(ws_settings.WEBSOCKET_SIGNAL_DECODER)
 
 def get_websocket_topics(request: Union[HttpRequest, WindowInfo]):
     # noinspection PyUnresolvedReferences
-    redis_key = "%s%s" % (ws_settings.WEBSOCKET_REDIS_PREFIX, request.window_key)
+    redis_key = "%s%s" % (
+        ws_settings.WEBSOCKET_REDIS_PREFIX,
+        getattr(request, "window_key", ""),
+    )
     connection = get_websocket_redis_connection()
     topics = connection.lrange(redis_key, 0, -1)
     return [valid_topic_name(x) for x in topics]
@@ -134,7 +137,6 @@ class DFConsumer(WebsocketConsumer):
 
     # Receive message from WebSocket
     def receive(self, text_data=None, bytes_data=None):
-        print([text_data, bytes_data])
         try:
             msg = json.loads(text_data)
             logger.debug('WS message received "%s"' % text_data)

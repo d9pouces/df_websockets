@@ -23,10 +23,9 @@ You should not use this module (or rename it), as it is only used to auto-discov
 import logging.config
 
 from celery import Celery, signals
+from df_config.manage import set_env
 from django.apps import apps
 from django.conf import settings
-
-from df_config.manage import set_env
 
 try:
     # noinspection PyProtectedMember
