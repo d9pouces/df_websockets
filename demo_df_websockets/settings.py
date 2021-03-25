@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -28,6 +28,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = []  # type: List[str]
 
+REDIS_HOST = os.environ.get("DF_REDIS_HOST", "localhost")
+REDIS_PASSWORD = os.environ.get("DF_REDIS_PASSWORD", "")
+REDIS_PORT = int(os.environ.get("DF_REDIS_PORT", "6379"))
+REDIS_DB = int(os.environ.get("DF_REDIS_DB", "1"))
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -45,7 +50,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("localhost", 6379)],
+            "hosts": [(REDIS_HOST, REDIS_PORT)],
         },
     },
 }
@@ -61,10 +66,10 @@ MIDDLEWARE = [
 ]
 ASGI_APPLICATION = "df_websockets.routing.application"
 WEBSOCKET_REDIS_CONNECTION = {
-    "host": "localhost",
-    "port": 6379,
-    "db": 1,
-    "password": "",
+    "host": REDIS_HOST,
+    "port": REDIS_PORT,
+    "db": REDIS_DB,
+    "password": REDIS_PASSWORD,
 }
 WINDOW_INFO_MIDDLEWARES = [
     "df_websockets.ws_middleware.WindowKeyMiddleware",

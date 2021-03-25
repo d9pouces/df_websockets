@@ -26,9 +26,9 @@ from django.core.handlers.base import BaseHandler
 from django.http import HttpRequest, HttpResponse, QueryDict
 from django.utils.module_loading import import_string
 
-from df_websockets import ws_settings
+from df_websockets import ws_settings, tasks
 from df_websockets.middleware import WebsocketMiddleware
-from df_websockets.tasks import SERVER, _trigger_signal, get_websocket_redis_connection
+from df_websockets.tasks import SERVER, _trigger_signal
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
@@ -44,7 +44,7 @@ def get_websocket_topics(request: Union[HttpRequest, WindowInfo]):
         ws_settings.WEBSOCKET_REDIS_PREFIX,
         getattr(request, "window_key", ""),
     )
-    connection = get_websocket_redis_connection()
+    connection = tasks.get_websocket_redis_connection()
     topics = connection.lrange(redis_key, 0, -1)
     return [valid_topic_name(x) for x in topics]
 

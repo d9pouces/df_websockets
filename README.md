@@ -39,11 +39,9 @@ ASGI_APPLICATION = "df_websockets.routing.application"
 # add the required Middleware
 MIDDLEWARES = [..., "df_websockets.middleware.WebsocketMiddleware", ...]
 INSTALLED_APPS = [..., "channels", "df_websockets", ...]
-#
+# the required redis connection 
 WEBSOCKET_REDIS_CONNECTION = {'host': 'localhost', 'port': 6379, 'db': 1, 'password': ''}
-# equivalent to MIDDLEWARES, but for websocket connections
-WINDOW_INFO_MIDDLEWARES = ["df_websockets.ws_middleware.WindowKeyMiddleware", "df_websockets.ws_middleware.DjangoAuthMiddleware", "df_websockets.ws_middleware.Djangoi18nMiddleware", "df_websockets.ws_middleware.BrowserMiddleware",]
-# the endpoint for the websockets
+# the endpoint for the websocket
 WEBSOCKET_URL = "/ws/"
 # a channel layer, required by channels_redis
 CHANNEL_LAYERS = {
