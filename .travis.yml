@@ -2,11 +2,12 @@ language: python
 # sudo: required
 dist: bionic
 env:
+  matrix:
+  - DJANGO_VERSION="Django>=3.1,<3.2" CHANNELS_VERSION="channels>=3.0,<3.1"
+
 #- DJANGO_VERSION=Django>=2.2,<3.0
 #- DJANGO_VERSION=Django>=3.0,<3.1
-- DJANGO_VERSION=Django>=3.1,<3.2
 #- CHANNELS_VERSION=channels>=2.4,<3.0
-- CHANNELS_VERSION=channels>=3.0,<3.1
 python:
 #- "3.6"
 #- "3.7"
@@ -16,7 +17,7 @@ matrix:
   - python: "3.8"
     env: DJANGO_VERSION="Django>=2.0,<2.1"
 install:
-- python -m pip install $DJANGO_VERSION $CHANNELS_VERSION
+- pip install $DJANGO_VERSION $CHANNELS_VERSION
 - python setup.py develop
 script:
 - python demo_manage.py migrate
