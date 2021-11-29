@@ -270,3 +270,31 @@ with SignalQueue() as fd:
 # # ['test.signal2', {…}, {'value': 'value2'}, False, None, True, None]]}
 # fd.ws_signals looks like {'-int.1': [('test.signal1', {'value': 'value1'}), ('test.signal2', {'value': 'value2'})]}
 ```
+
+Checklist 
+---------
+
+Everything must be correctly setup to have working signals.
+
+The first step is to test tasks from the command-line:
+
+1. Redis must be running and accepting connections
+2. at least one worker must be running with all required queues
+3. open a console `python manage.py shell`
+4. manually trigger a task
+```python
+from df_websockets.tasks import trigger, SERVER
+from df_websockets.window_info import WindowInfo
+trigger(WindowInfo(), 'test.signal2', to=[SERVER], value="value2")
+```
+
+
+The second step is to check the web part:
+
+1. the web server must be running and accepting connections
+2. check if `df_websockets.middleware.WebsocketMiddleware` is used
+3. check the used domain name, since tokens are passed through cookies: **"localhost" is different than "127.0.0.1"**
+4. `df_websockets.tasks.set_websocket_topics` is used somewhere in the view
+5. check if `static/js/df_websockets.min.js` is included in the page
+6. check if the WS tries to connect
+7. check if the WS is connected
