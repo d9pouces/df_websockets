@@ -198,7 +198,7 @@ Using on a HTML form:
 or, using the Django templating system:
 
 ```html
-{% load df_websockets %}
+{% load websockets %}
 <form {% js_call "signal.name" on="change" form="form_data" id=42 %}>
     <input type="text" name="title" value="df_websockets">
 </form>
@@ -218,7 +218,7 @@ Using on a HTML form input field:
 or, using the Django templating system:
 
 ```html
-{% load df_websockets %}
+{% load websockets %}
 <form>
     <input type="text" name="title" {% js_call "signal.name" on="change" value="title" id=42 %}>
 </form>
