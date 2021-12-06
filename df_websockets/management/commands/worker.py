@@ -16,9 +16,13 @@
 import os
 import sys
 
+# noinspection PyPackageRequirements
 from celery.bin.celery import main as celery_main
+# noinspection PyPackageRequirements
 from django.conf import settings
+# noinspection PyPackageRequirements
 from django.core.management import BaseCommand
+# noinspection PyPackageRequirements
 from django.utils.autoreload import run_with_reloader
 
 from df_websockets import ws_settings

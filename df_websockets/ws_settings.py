@@ -35,6 +35,8 @@ WEBSOCKET_SIGNAL_ENCODER = getattr(
 WEBSOCKET_TOPIC_SERIALIZER = getattr(
     settings, "WEBSOCKET_TOPIC_SERIALIZER", "df_websockets.topics.serialize_topic"
 )
+WEBSOCKET_WORKERS = "celery"
+
 WINDOW_INFO_MIDDLEWARES = getattr(
     settings,
     "WINDOW_INFO_MIDDLEWARES",

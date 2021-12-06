@@ -18,9 +18,11 @@ import logging
 from functools import lru_cache
 from typing import Optional, Union
 
+from asgiref.compatibility import guarantee_single_callable
 from asgiref.sync import async_to_sync
 from channels.consumer import SyncConsumer
 from channels.generic.websocket import WebsocketConsumer
+from channels.routing import ChannelNameRouter
 from django import http
 from django.core.exceptions import ImproperlyConfigured
 from django.core.handlers.base import BaseHandler
@@ -30,6 +32,7 @@ from django.utils.module_loading import import_string
 from df_websockets import ws_settings, tasks
 from df_websockets.middleware import WebsocketMiddleware
 from df_websockets.tasks import SERVER, _trigger_signal
+from df_websockets.triggering import process_task
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
@@ -162,5 +165,38 @@ class DFConsumer(WebsocketConsumer):
 
 
 class BackgroundConsumer(SyncConsumer):
-    def process_df_signal(self):
-        pass
+    def process_signal(
+        self,
+        signal_name,
+        window_info_dict,
+        kwargs=None,
+        from_client=False,
+        serialized_client_topics=None,
+        to_server=False,
+        queue=None,
+    ):
+        process_task(
+            signal_name,
+            window_info_dict,
+            kwargs=kwargs,
+            from_client=from_client,
+            serialized_client_topics=serialized_client_topics,
+            to_server=to_server,
+            queue=queue,
+            celery_request=None,
+        )
+
+
+class DFChannelNameRouter(ChannelNameRouter):
+    def __init__(self):
+        super().__init__({})
+        self.application = BackgroundConsumer.as_asgi()
+
+    async def __call__(self, scope, receive, send):
+        if "channel" not in scope:
+            raise ValueError(
+                "ChannelNameRouter got a scope without a 'channel' key. "
+                + "Did you make sure it's only being used for 'channel' type messages?"
+            )
+        application = guarantee_single_callable(self.application)
+        return await application(scope, receive, send)
