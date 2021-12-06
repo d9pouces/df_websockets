@@ -53,7 +53,7 @@ CHANNEL_LAYERS = {
     },
 }
 ```
-You also need a fully functionnal Celery setup.
+**You also need a fully functionnal Celery setup**.
 
 
 If you use `df_config` and you use a local Redis, you have nothing to do: settings are automatically set and everything is working as soon as a Redis is running on your machine.
@@ -121,7 +121,7 @@ In this case, the `to` parameter targets both the server and the window.
 You can even open a shell and call `df_websockets.tasks.trigger(None, 'myproject.first_signal', to=[BROADCAST], content="hello from a shell")`.
 All open windows will react.
 
-topics
+Topics
 ------
 
 When the server triggers a signal, it can select if the signal is called on the server or on some browser windows.
@@ -158,7 +158,7 @@ There are three special values:
 
 * `df_websockets.tasks.WINDOW`: the original browser window,
 * `df_websockets.tasks.USER`: all windows currently displayed by the connected user,
-* `df_websockets.tasks.BROADCAST`: all windows currently active.
+* `df_websockets.tasks.BROADCAST`: all active windows.
 
 Some information about the original window (like its unique identifier or the connected user) must be provided to the triggered Python code, allowing it to trigger JS events on any selected window.  
 These data are stored in the `WindowInfo` object, automatically built from the HTTP request by the trigger function and provided as first argument to the triggered code.
@@ -185,6 +185,10 @@ def my_signal_function(window_info, form_data: SerializedForm(MyForm)=None, titl
     print(form_data and form_data.is_valid())
     trigger(window_info, 'myproject.first_signal', to=WINDOW, title=title)
 
+@signal(path='signal.name')
+def my_signal_function_raw(window_info, form_data=None, title=None, id=None):
+    print(form_data and form_data.is_valid())
+    trigger(window_info, 'myproject.first_signal', to=WINDOW, title=title)
 ```
 
 
@@ -274,6 +278,29 @@ with SignalQueue() as fd:
 # fd.ws_signals looks like {'-int.1': [('test.signal1', {'value': 'value1'}), ('test.signal2', {'value': 'value2'})]}
 ```
 
+JavaScript signals
+------------------
+
+Many [JS signals](https://github.com/d9pouces/df_websockets/blob/master/npm/df_websockets/base.js) are available out-of-the-box.
+These signals can be triggered either by the JS code or by the Python code.
+For example, you can update the content of a HTML node with the following lines:
+
+```python
+from df_websockets.tasks import trigger, WINDOW
+from df_websockets.decorators import signal
+
+@signal(path='test.signal', queue='demo-queue')
+def test_signal(window_info, word="hellow"):
+    trigger(window_info, 'html.content', to=WINDOW, selector="#obj", content= "<span>%s</span>" % word)
+```
+
+```javascript
+window.DFSignals.call('html.content', {selector: "#obj", content: "<span>hello</span>"});
+```
+
+Please read the content of `npm/df_websockets/base.js` for the whole list of available signals. 
+You can also create some shortcuts for the most common signals.
+
 Checklist 
 ---------
 
@@ -281,23 +308,124 @@ Everything must be correctly setup to have working signals.
 
 The first step is to test tasks from the command-line:
 
-1. Redis must be running and accepting connections
-2. at least one worker must be running with all required queues
-3. open a console `python manage.py shell`
-4. manually trigger a task
+1. Redis is running and accepting connections
+2. Celery is working
+2. at least one worker is running with all required queues
+3. the triggered signal is exists
+4. open a console `python manage.py shell` and manually trigger a task
 ```python
 from df_websockets.tasks import trigger, SERVER
 from df_websockets.window_info import WindowInfo
-trigger(WindowInfo(), 'test.signal2', to=[SERVER], value="value2")
+trigger(WindowInfo(), 'test.signal', to=[SERVER], value="value2")
 ```
 
 
 The second step is to check the web part:
 
 1. the web server must be running and accepting connections
-2. check if `df_websockets.middleware.WebsocketMiddleware` is used
-3. check the used domain name, since tokens are passed through cookies: **"localhost" is different than "127.0.0.1"**
-4. `df_websockets.tasks.set_websocket_topics` is used somewhere in the view
-5. check if `static/js/df_websockets.min.js` is included in the page
-6. check if the WS tries to connect
-7. check if the WS is connected
+2. Celery is working
+2. at least one worker is running with all required queues
+3. the triggered signal exists
+3. `df_websockets.middleware.WebsocketMiddleware` is included
+4. check the used domain name, since tokens are passed through cookies: **"localhost" is different than "127.0.0.1"**
+5. `df_websockets.tasks.set_websocket_topics` is used somewhere in the view
+6. `static/js/df_websockets.min.js` is included in the page
+7. check if the WS tries to connect
+8. check if the WS is connected
+4. open a console `python manage.py shell` and manually trigger a task
+```python
+from df_websockets.tasks import trigger, BROADCAST
+from df_websockets.window_info import WindowInfo
+trigger(WindowInfo(), 'html.text', to=[BROADCAST], selector="body", content= "<span>hello</span>")
+```
+
+Do not hesitate to use a verbose logging:
+```python
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": True,
+    "formatters": {
+        "verbose": {
+            "format": (
+                "%(asctime)s [%(process)d] [%(levelname)s] "
+                + "pathname=%(pathname)s lineno=%(lineno)s "
+                + "funcname=%(funcName)s %(message)s"
+            ),
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+        "django.server": {
+            "()": "django.utils.log.ServerFormatter",
+        },
+        "nocolor": {
+            "()": "logging.Formatter",
+            "fmt": "%(asctime)s [%(name)s] [%(levelname)s] %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
+    "filters": {
+    },
+    "handlers": {
+        "stdout.info": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "stream": "ext://sys.stdout",
+            "formatter": "verbose",
+        },
+        "stderr.debug.django.server": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "stream": "ext://sys.stderr",
+            "formatter": "django.server",
+        },
+    },
+    "loggers": {
+        "django": {"handlers": [], "level": "INFO", "propagate": True},
+        "django.db": {"handlers": [], "level": "INFO", "propagate": True},
+        "django.db.backends": {"handlers": [], "level": "INFO", "propagate": True},
+        "django.request": {"handlers": [], "level": "DEBUG", "propagate": True},
+        "django.security": {"handlers": [], "level": "INFO", "propagate": True},
+        "df_websockets.signals": {"handlers": [], "level": "DEBUG", "propagate": True},
+        "gunicorn.error": {"handlers": [], "level": "DEBUG", "propagate": True},
+        "pip.vcs": {"handlers": [], "level": "INFO", "propagate": True},
+        "py.warnings": {
+            "handlers": [],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "daphne.cli": {"handlers": [], "level": "INFO", "propagate": True},
+        "mail.log": {"handlers": [], "level": "INFO", "propagate": True},
+        "django_celery_beat.schedulers": {
+            "handlers": [],
+            "level": "WARN",
+            "propagate": True,
+        },
+        "aiohttp.access": {
+            "handlers": ["stderr.debug.django.server"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.server": {
+            "handlers": ["stderr.debug.django.server"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.channels.server": {
+            "handlers": ["stderr.debug.django.server"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "geventwebsocket.handler": {
+            "handlers": ["stderr.debug.django.server"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "gunicorn.access": {
+            "handlers": ["stderr.debug.django.server"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+    "root": {"handlers": ["stdout.info"], "level": "DEBUG"},
+}
+
+```
