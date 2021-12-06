@@ -19,6 +19,7 @@ from functools import lru_cache
 from typing import Optional, Union
 
 from asgiref.sync import async_to_sync
+from channels.consumer import SyncConsumer
 from channels.generic.websocket import WebsocketConsumer
 from django import http
 from django.core.exceptions import ImproperlyConfigured
@@ -158,3 +159,8 @@ class DFConsumer(WebsocketConsumer):
                 )
         except Exception as e:
             logger.exception(e)
+
+
+class BackgroundConsumer(SyncConsumer):
+    def process_df_signal(self):
+        pass

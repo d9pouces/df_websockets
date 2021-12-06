@@ -53,6 +53,9 @@ CHANNEL_LAYERS = {
     },
 }
 ```
+You also need a fully functionnal Celery setup.
+
+
 If you use `df_config` and you use a local Redis, you have nothing to do: settings are automatically set and everything is working as soon as a Redis is running on your machine.
 
 Now, include `js/df_websockets.min.js` in your HTML and call `df_websockets.tasks.set_websocket_topics(request)` somewhere in the Django view.
