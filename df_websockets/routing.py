@@ -38,6 +38,7 @@ websocket_urlpatterns = [
 mapping = {
     "websocket": AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
     "channel": DFChannelNameRouter(),
+    "celery": DFChannelNameRouter(),
 }
 if ASGIHandler:
     mapping["http"] = ASGIHandler()

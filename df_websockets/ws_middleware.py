@@ -102,7 +102,7 @@ class DjangoAuthMiddleware(WindowInfoMiddleware):
         window_info._perms = None
         window_info._template_perms = None
         window_info.user_agent = request.META.get("HTTP_USER_AGENT", "")
-        window_info.csrf_cookie = request.COOKIES.get("csrftoken", "")
+        window_info.csrf_cookie = request.COOKIES.get(settings.CSRF_COOKIE_NAME, "")
         if user and user.is_authenticated:
             window_info.user_pk = user.pk
             window_info.username = user.get_username()

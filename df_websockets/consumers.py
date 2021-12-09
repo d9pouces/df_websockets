@@ -31,8 +31,7 @@ from django.utils.module_loading import import_string
 
 from df_websockets import ws_settings, tasks
 from df_websockets.middleware import WebsocketMiddleware
-from df_websockets.tasks import SERVER, _trigger_signal
-from df_websockets.triggering import process_task
+from df_websockets.tasks import SERVER, _trigger_signal, process_task
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
@@ -167,14 +166,10 @@ class DFConsumer(WebsocketConsumer):
 class BackgroundConsumer(SyncConsumer):
     def process_signal(
         self,
-        signal_name,
-        window_info_dict,
-        kwargs=None,
-        from_client=False,
-        serialized_client_topics=None,
-        to_server=False,
-        queue=None,
+            data,
     ):
+        signal_name, window_info_dict, kwargs,  from_client , serialized_client_topics, to_server, queue = data["args"]
+        # 'type': 'process.signal', 'args': ['df_websockets_demo.check_csp', {'window_key': 'go073jwd433yzmfa2lfq13zwjcpewr8x', 'user_pk': None, 'username': None, 'is_superuser': False, 'is_staff': False, 'is_active': False, 'csrf_cookie': 'MZSbRdm6EbMwvRyexRr9ZQiltfaEk40Rj1L7kbjX4IMsbpFDe51Rai0sSFnhD5dK', 'perms': None, 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15', 'user_set': False, 'language_code': 'fr'}, {'form_data': [{'name': 'url', 'value': 'https://aviationsmilitaires.net/v3/tracking/sujets%20non%20lus%20/'}]}, True, [], True, 'celery']},
         process_task(
             signal_name,
             window_info_dict,
