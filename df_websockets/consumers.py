@@ -164,12 +164,19 @@ class DFConsumer(WebsocketConsumer):
 
 
 class BackgroundConsumer(SyncConsumer):
+    # noinspection PyMethodMayBeStatic
     def process_signal(
-        self,
-            data,
+        self, data,
     ):
-        signal_name, window_info_dict, kwargs,  from_client , serialized_client_topics, to_server, queue = data["args"]
-        # 'type': 'process.signal', 'args': ['df_websockets_demo.check_csp', {'window_key': 'go073jwd433yzmfa2lfq13zwjcpewr8x', 'user_pk': None, 'username': None, 'is_superuser': False, 'is_staff': False, 'is_active': False, 'csrf_cookie': 'MZSbRdm6EbMwvRyexRr9ZQiltfaEk40Rj1L7kbjX4IMsbpFDe51Rai0sSFnhD5dK', 'perms': None, 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15', 'user_set': False, 'language_code': 'fr'}, {'form_data': [{'name': 'url', 'value': 'https://aviationsmilitaires.net/v3/tracking/sujets%20non%20lus%20/'}]}, True, [], True, 'celery']},
+        (
+            signal_name,
+            window_info_dict,
+            kwargs,
+            from_client,
+            serialized_client_topics,
+            to_server,
+            queue,
+        ) = data["args"]
         process_task(
             signal_name,
             window_info_dict,

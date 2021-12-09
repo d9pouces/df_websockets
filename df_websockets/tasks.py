@@ -29,12 +29,16 @@ Use these functions for:
 
 import json
 import logging
+import multiprocessing.pool
 import os
 import uuid
 from functools import lru_cache
 from importlib import import_module
 
 # noinspection PyPackageRequirements
+from typing import Dict
+
+import django
 from asgiref.sync import async_to_sync
 
 try:
@@ -76,6 +80,7 @@ from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
 logger = logging.getLogger("df_websockets.signals")
+_PROCESS_POOLS = {}  # type: Dict[str, multiprocessing.pool.Pool]
 
 
 class Constant:
@@ -311,6 +316,7 @@ def _trigger_signal(
                 celery_args, queue=queue, **background_kwargs,
             )
             call_channel_task(celery_args, queue)
+            call_thread_task(celery_args, queue)
     if serialized_client_topics and not background_kwargs:
         signal_id = str(uuid.uuid4())
         for topic in serialized_client_topics:
@@ -318,7 +324,6 @@ def _trigger_signal(
 
 
 def call_celery_task(args, queue, expires=None, eta=None, countdown=None):
-    logger.warning("call_celery_task : %s", args)
     _server_signal_call.apply_async(
         args=args, queue=queue, expires=expires, eta=eta, countdown=countdown
     )
@@ -332,7 +337,15 @@ def call_channel_task(args, queue):
 
 
 def call_thread_task(args, queue):
-    pass
+    if queue not in _PROCESS_POOLS:
+        pool_size = ws_settings.WEBSOCKET_POOL_SIZES.get(queue, ws_settings.WEBSOCKET_POOL_SIZES.get(None, 5))
+        if ws_settings.WEBSOCKET_WORKERS == "multithread":
+            pool = multiprocessing.pool.ThreadPool(pool_size)
+        else:
+            pool = multiprocessing.pool.Pool(pool_size, initializer=django.setup, initargs=())
+        _PROCESS_POOLS[queue] = pool
+    pool = _PROCESS_POOLS[queue]  # type: multiprocessing.pool.Pool
+    pool.apply_async(process_task, args=args)
 
 
 def process_task(
@@ -479,10 +492,10 @@ if celery_shared_task is not None:
         return process_task(
             signal_name,
             window_info_dict,
-            kwargs=kwargs,
-            from_client=from_client,
-            serialized_client_topics=serialized_client_topics,
-            to_server=to_server,
-            queue=queue,
-            celery_request=self.request,
+            kwargs,
+            from_client,
+            serialized_client_topics,
+            to_server,
+            queue,
+            self.request,
         )
