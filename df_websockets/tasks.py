@@ -76,7 +76,7 @@ from df_websockets.decorators import (
     SignalConnection,
 )
 from df_websockets.load import load_celery
-from df_websockets.utils import valid_topic_name
+from df_websockets.utils import Worker, valid_topic_name
 from df_websockets.window_info import WindowInfo
 
 logger = logging.getLogger("df_websockets.signals")
@@ -273,6 +273,8 @@ def _trigger_signal(
         background_kwargs["eta"] = eta
     if countdown:
         background_kwargs["countdown"] = countdown
+    if background_kwargs and ws_settings.WEBSOCKET_WORKERS != Worker.WORKER_CELERY:
+        raise ValueError("Unable to use eta, countdown or expires in signals when not using Celery.")
     queues = {
         x.get_queue(window_info, kwargs)
         for x in REGISTERED_SIGNALS.get(signal_name, [])
@@ -312,11 +314,14 @@ def _trigger_signal(
                 to_server,
                 queue,
             ]
-            call_celery_task(
+            if ws_settings.WEBSOCKET_WORKERS == Worker.WORKER_CELERY:
+                call_celery_task(
                 celery_args, queue=queue, **background_kwargs,
             )
-            call_channel_task(celery_args, queue)
-            call_thread_task(celery_args, queue)
+            elif ws_settings.WEBSOCKET_WORKERS == Worker.WORKER_CHANNEL:
+                call_channel_task(celery_args, queue)
+            else:
+                call_thread_task(celery_args, queue)
     if serialized_client_topics and not background_kwargs:
         signal_id = str(uuid.uuid4())
         for topic in serialized_client_topics:
@@ -339,7 +344,7 @@ def call_channel_task(args, queue):
 def call_thread_task(args, queue):
     if queue not in _PROCESS_POOLS:
         pool_size = ws_settings.WEBSOCKET_POOL_SIZES.get(queue, ws_settings.WEBSOCKET_POOL_SIZES.get(None, 5))
-        if ws_settings.WEBSOCKET_WORKERS == "multithread":
+        if ws_settings.WEBSOCKET_WORKERS == Worker.WORKER_THREAD:
             pool = multiprocessing.pool.ThreadPool(pool_size)
         else:
             pool = multiprocessing.pool.Pool(pool_size, initializer=django.setup, initargs=())

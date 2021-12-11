@@ -18,10 +18,18 @@ import io
 import mimetypes
 import os
 import re
+from enum import Enum
 from typing import Union
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import QueryDict
+
+
+class Worker(Enum):
+    WORKER_CELERY = "celery"
+    WORKER_CHANNEL = "channels"
+    WORKER_THREAD = "thread"
+    WORKER_PROCESS = "process"
 
 
 class RE:
