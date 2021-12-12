@@ -1,6 +1,6 @@
 setuptools==59.5.0
 Django==4.0
-asgiref==3.4.1
+asgiref==3.3.4
 celery==5.2.1
 channels~=3.0.3
 redis==4.0.2

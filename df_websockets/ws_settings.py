@@ -15,7 +15,7 @@
 # ##############################################################################
 from django.conf import settings
 
-from df_websockets.constants import Worker
+from df_websockets.constants import WORKER_CELERY
 
 CELERY_APP = getattr(settings, "CELERY_APP", "df_websockets")
 CELERY_DEFAULT_QUEUE = getattr(settings, "CELERY_DEFAULT_QUEUE", "celery")
@@ -33,7 +33,7 @@ WEBSOCKET_SIGNAL_ENCODER = getattr(
 WEBSOCKET_TOPIC_SERIALIZER = getattr(
     settings, "WEBSOCKET_TOPIC_SERIALIZER", "df_websockets.topics.serialize_topic"
 )
-WEBSOCKET_WORKERS = getattr(settings, "WEBSOCKET_WORKERS", Worker.WORKER_CELERY)
+WEBSOCKET_WORKERS = getattr(settings, "WEBSOCKET_WORKERS", WORKER_CELERY)
 # "celery", "channels", "multithread", "multiprocess"
 WEBSOCKET_POOL_SIZES = getattr(settings, "WEBSOCKET_POOL_SIZES", {None: 10})
 WINDOW_INFO_MIDDLEWARES = getattr(

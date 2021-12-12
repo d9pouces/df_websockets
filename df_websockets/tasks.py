@@ -63,7 +63,7 @@ from df_websockets.decorators import (
     SignalConnection,
 )
 from df_websockets.load import load_celery
-from df_websockets.constants import Worker
+from df_websockets.constants import WORKER_CELERY, WORKER_CHANNEL, WORKER_PROCESS, WORKER_THREAD
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
@@ -232,7 +232,8 @@ def _trigger_signal(
         background_kwargs["eta"] = eta
     if countdown:
         background_kwargs["countdown"] = countdown
-    if background_kwargs and ws_settings.WEBSOCKET_WORKERS != Worker.WORKER_CELERY:
+    worker_mode = ws_settings.WEBSOCKET_WORKERS
+    if background_kwargs and worker_mode != WORKER_CELERY:
         raise ValueError(
             "Unable to use eta, countdown or expires in signals when not using Celery."
         )
@@ -275,28 +276,32 @@ def _trigger_signal(
                 to_server,
                 queue,
             ]
-            if ws_settings.WEBSOCKET_WORKERS == Worker.WORKER_CELERY:
+            if worker_mode == WORKER_CELERY:
                 call_celery_task(
                     celery_args,
                     queue=queue,
                     **background_kwargs,
                 )
-            elif ws_settings.WEBSOCKET_WORKERS == Worker.WORKER_CHANNEL:
+            elif worker_mode == WORKER_CHANNEL:
                 call_channel_task(celery_args, queue)
-            else:
+            elif worker_mode in {WORKER_THREAD, WORKER_PROCESS}:
                 call_thread_task(celery_args, queue)
+            else:
+                raise ImproperlyConfigured("Invalid WEBSOCKET_WORKERS settings: %s" % worker_mode)
     if serialized_client_topics and not background_kwargs:
         signal_id = str(uuid.uuid4())
         _call_ws_signal(signal_name, signal_id, serialized_client_topics, kwargs)
 
 
 def call_celery_task(args, queue, expires=None, eta=None, countdown=None):
+    logger.debug('Call Celery task to queue %s.', queue)
     _server_signal_call.apply_async(
         args=args, queue=queue, expires=expires, eta=eta, countdown=countdown
     )
 
 
 def call_channel_task(args, queue):
+    logger.debug('Call Channels task to queue %s.', queue)
     channel_layer = get_channel_layer(DEFAULT_CHANNEL_LAYER)
     async_to_sync(channel_layer.send)(
         queue,
@@ -309,9 +314,11 @@ def call_thread_task(args, queue):
         pool_size = ws_settings.WEBSOCKET_POOL_SIZES.get(
             queue, ws_settings.WEBSOCKET_POOL_SIZES.get(None, 5)
         )
-        if ws_settings.WEBSOCKET_WORKERS == Worker.WORKER_THREAD:
+        if ws_settings.WEBSOCKET_WORKERS == WORKER_THREAD:
+            logger.debug('Call thread task to queue %s.', queue)
             pool = multiprocessing.pool.ThreadPool(pool_size)
         else:
+            logger.debug('Call multiprocess task to queue %s.', queue)
             pool = multiprocessing.pool.Pool(
                 pool_size, initializer=django.setup, initargs=()
             )
@@ -394,7 +401,7 @@ def import_signals_and_functions():
         except Exception as e:
             logger.exception(e)
 
-    if ws_settings.WEBSOCKET_WORKERS == Worker.WORKER_CELERY:
+    if ws_settings.WEBSOCKET_WORKERS == WORKER_CELERY:
         load_celery()
     for app_config in apps.app_configs.values():
         app = app_config.name

@@ -11,9 +11,10 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
 from pathlib import Path
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from typing import List
+
+from df_websockets.constants import WORKER_CHANNEL
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
@@ -32,44 +33,6 @@ REDIS_HOST = os.environ.get("DF_REDIS_HOST", "localhost")
 REDIS_PASSWORD = os.environ.get("DF_REDIS_PASSWORD", "")
 REDIS_PORT = int(os.environ.get("DF_REDIS_PORT", "6379"))
 
-# Application definition
-
-INSTALLED_APPS = [
-    "channels",
-    "df_websockets",
-    "demo_df_websockets",
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-]
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [(REDIS_HOST, REDIS_PORT)],
-        },
-    },
-}
-MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "df_websockets.middleware.WebsocketMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-]
-ASGI_APPLICATION = "df_websockets.routing.application"
-WINDOW_INFO_MIDDLEWARES = [
-    "df_websockets.ws_middleware.WindowKeyMiddleware",
-    "df_websockets.ws_middleware.DjangoAuthMiddleware",
-    "df_websockets.ws_middleware.Djangoi18nMiddleware",
-    "df_websockets.ws_middleware.BrowserMiddleware",
-]
 
 ROOT_URLCONF = "demo_df_websockets.urls"
 
@@ -88,25 +51,56 @@ TEMPLATES = [
         },
     },
 ]
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = "/static/"
 
-WSGI_APPLICATION = "demo_df_websockets.wsgi.application"
+# Application definition
+
+INSTALLED_APPS = [
+    "channels",
+    "df_websockets",
+    "demo_df_websockets",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+]
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [(REDIS_HOST, REDIS_PORT)],},
+    },
+}
+
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "df_websockets.middleware.WebsocketMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+ASGI_APPLICATION = "df_websockets.routing.application"
+WEBSOCKET_WORKERS = WORKER_CHANNEL
+WINDOW_INFO_MIDDLEWARES = [
+    "df_websockets.ws_middleware.WindowKeyMiddleware",
+    "df_websockets.ws_middleware.DjangoAuthMiddleware",
+    "df_websockets.ws_middleware.Djangoi18nMiddleware",
+    "df_websockets.ws_middleware.BrowserMiddleware",
+]
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-WEBSOCKET_WORKERS = "process"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": str(BASE_DIR / "db.sqlite3"),
     }
 }
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.1/howto/static-files/
-
-STATIC_URL = "/static/"
-
 
 LOGGING = {
     "version": 1,
@@ -120,9 +114,7 @@ LOGGING = {
             ),
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        "django.server": {
-            "()": "django.utils.log.ServerFormatter",
-        },
+        "django.server": {"()": "django.utils.log.ServerFormatter",},
         "nocolor": {
             "()": "logging.Formatter",
             "fmt": "%(asctime)s [%(name)s] [%(levelname)s] %(message)s",
@@ -153,11 +145,7 @@ LOGGING = {
         "df_websockets.signals": {"handlers": [], "level": "DEBUG", "propagate": True},
         "gunicorn.error": {"handlers": [], "level": "DEBUG", "propagate": True},
         "pip.vcs": {"handlers": [], "level": "INFO", "propagate": True},
-        "py.warnings": {
-            "handlers": [],
-            "level": "INFO",
-            "propagate": True,
-        },
+        "py.warnings": {"handlers": [], "level": "INFO", "propagate": True,},
         "daphne": {"handlers": [], "level": "INFO", "propagate": True},
         "daphne.cli": {"handlers": [], "level": "INFO", "propagate": True},
         "mail.log": {"handlers": [], "level": "INFO", "propagate": True},

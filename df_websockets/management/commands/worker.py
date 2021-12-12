@@ -25,7 +25,7 @@ from django.core.management import CommandError
 from django.utils.autoreload import run_with_reloader
 
 from df_websockets import ws_settings
-from df_websockets.constants import Worker
+from df_websockets.constants import WORKER_CELERY
 
 logger = logging.getLogger("django.channels.worker")
 
@@ -36,7 +36,7 @@ class Command(BaseCommand):
     help = "Manage queue workers"
 
     def run_from_argv(self, argv):
-        if ws_settings.WEBSOCKET_WORKERS == Worker.WORKER_CELERY:
+        if ws_settings.WEBSOCKET_WORKERS == WORKER_CELERY:
             from celery.bin.celery import main as celery_main
 
             os.environ.setdefault("CELERY_APP", ws_settings.CELERY_APP)
@@ -50,7 +50,7 @@ class Command(BaseCommand):
         super().run_from_argv(argv)
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super(BaseCommand, self).add_arguments(parser)
         parser.add_argument("-Q", "--queues", help="Queue Options")
 
     def handle(self, *args, **options):
