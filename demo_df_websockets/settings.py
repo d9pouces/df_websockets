@@ -11,10 +11,11 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
 from pathlib import Path
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from typing import List
 
-from df_websockets.constants import WORKER_CHANNEL
+from df_websockets.constants import WORKER_CHANNEL, WORKER_THREAD
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
@@ -28,10 +29,6 @@ SECRET_KEY = "=$@-4on)b3h@-6s#e-sks3!v)10&rq64+p0#c$)8-8_%=zzel("
 DEBUG = True
 
 ALLOWED_HOSTS = []  # type: List[str]
-
-REDIS_HOST = os.environ.get("DF_REDIS_HOST", "localhost")
-REDIS_PASSWORD = os.environ.get("DF_REDIS_PASSWORD", "")
-REDIS_PORT = int(os.environ.get("DF_REDIS_PORT", "6379"))
 
 
 ROOT_URLCONF = "demo_df_websockets.urls"
@@ -67,12 +64,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 ]
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [(REDIS_HOST, REDIS_PORT)],},
-    },
-}
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -85,7 +77,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 ASGI_APPLICATION = "df_websockets.routing.application"
-WEBSOCKET_WORKERS = WORKER_CHANNEL
+WEBSOCKET_WORKERS = WORKER_THREAD
 WINDOW_INFO_MIDDLEWARES = [
     "df_websockets.ws_middleware.WindowKeyMiddleware",
     "df_websockets.ws_middleware.DjangoAuthMiddleware",
@@ -114,7 +106,7 @@ LOGGING = {
             ),
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        "django.server": {"()": "django.utils.log.ServerFormatter",},
+        "django.server": {"()": "django.utils.log.ServerFormatter"},
         "nocolor": {
             "()": "logging.Formatter",
             "fmt": "%(asctime)s [%(name)s] [%(levelname)s] %(message)s",
@@ -145,7 +137,7 @@ LOGGING = {
         "df_websockets.signals": {"handlers": [], "level": "DEBUG", "propagate": True},
         "gunicorn.error": {"handlers": [], "level": "DEBUG", "propagate": True},
         "pip.vcs": {"handlers": [], "level": "INFO", "propagate": True},
-        "py.warnings": {"handlers": [], "level": "INFO", "propagate": True,},
+        "py.warnings": {"handlers": [], "level": "INFO", "propagate": True},
         "daphne": {"handlers": [], "level": "INFO", "propagate": True},
         "daphne.cli": {"handlers": [], "level": "INFO", "propagate": True},
         "mail.log": {"handlers": [], "level": "INFO", "propagate": True},

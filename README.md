@@ -402,7 +402,7 @@ LOGGING = {
             "level": "INFO",
             "propagate": True,
         },
-        "daphne.cli": {"handlers": [], "level": "INFO", "propagate": True},
+        "daphne": {"handlers": [], "level": "INFO", "propagate": True},
         "mail.log": {"handlers": [], "level": "INFO", "propagate": True},
         "aiohttp.access": {
             "handlers": ["stderr.debug.django.server"],
