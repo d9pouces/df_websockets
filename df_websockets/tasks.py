@@ -211,7 +211,7 @@ def _trigger_signal(
     serialized_client_topics = []
     to_server = False
     to_sync = False
-    logger.debug('received signal "%s" to %r', (signal_name, to))
+    logger.debug('received signal "%s" to %r', signal_name, to)
     for topic in to:
         if topic is SERVER:
             if signal_name not in REGISTERED_SIGNALS:
@@ -332,7 +332,7 @@ def process_task(
 ):
     logger.info(
         'Signal "%s" called on queue "%s" to topics %s (from client?: %s, to server?: %s)',
-        (signal_name, queue, serialized_client_topics, from_client, to_server),
+        signal_name, queue, serialized_client_topics, from_client, to_server,
     )
     try:
         if kwargs is None:
