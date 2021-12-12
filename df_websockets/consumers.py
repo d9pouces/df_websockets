@@ -24,12 +24,13 @@ from channels.consumer import SyncConsumer
 from channels.generic.websocket import WebsocketConsumer
 from channels.routing import ChannelNameRouter
 from django import http
+from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.core.handlers.base import BaseHandler
 from django.http import HttpRequest, HttpResponse, QueryDict
 from django.utils.module_loading import import_string
 
-from df_websockets import ws_settings, tasks
+from df_websockets import ws_settings
 from df_websockets.middleware import WebsocketMiddleware
 from df_websockets.tasks import SERVER, _trigger_signal, process_task
 from df_websockets.utils import valid_topic_name
@@ -42,14 +43,16 @@ signal_decoder = import_string(ws_settings.WEBSOCKET_SIGNAL_DECODER)
 
 
 def get_websocket_topics(request: Union[HttpRequest, WindowInfo]):
+    if not hasattr(request, "window_key"):
+        return []
     # noinspection PyUnresolvedReferences
-    redis_key = "%s%s" % (
+    cache_key = "%s%s" % (
         ws_settings.WEBSOCKET_REDIS_PREFIX,
-        getattr(request, "window_key", ""),
+        request.window_key,
     )
-    connection = tasks.get_websocket_redis_connection()
-    topics = connection.lrange(redis_key, 0, -1)
-    return [valid_topic_name(x) for x in topics]
+    topic_string = cache.get(cache_key, "[]")
+    logger.debug("websocket %s is bound to topics %s", cache_key, topic_string)
+    return [valid_topic_name(x) for x in json.loads(topic_string)]
 
 
 class WebsocketHandler(BaseHandler):
@@ -142,7 +145,7 @@ class DFConsumer(WebsocketConsumer):
     def receive(self, text_data=None, bytes_data=None):
         try:
             msg = json.loads(text_data)
-            logger.debug('WS message received "%s"' % text_data)
+            logger.debug('WS message received "%s"', text_data)
             if "signal" in msg:
                 kwargs = msg["opts"]
                 signal_name = msg["signal"]
@@ -166,7 +169,8 @@ class DFConsumer(WebsocketConsumer):
 class BackgroundConsumer(SyncConsumer):
     # noinspection PyMethodMayBeStatic
     def process_signal(
-        self, data,
+        self,
+        data,
     ):
         (
             signal_name,

@@ -14,18 +14,14 @@
 #                                                                              #
 # ##############################################################################
 
-# noinspection PyPackageRequirements
 from channels.auth import AuthMiddlewareStack
 
-# noinspection PyPackageRequirements
 from channels.routing import ProtocolTypeRouter, URLRouter
 
 try:
-    # noinspection PyPackageRequirements
     from django.core.handlers.asgi import ASGIHandler
 except ImportError:  # django < 3.0
     ASGIHandler = None
-# noinspection PyPackageRequirements
 from django.urls import path
 
 from df_websockets import ws_settings

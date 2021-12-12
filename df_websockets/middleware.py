@@ -58,7 +58,7 @@ class WebsocketMiddleware(MiddlewareMixin):
 
     def process_request(self, request: HttpRequest):
         request.window_key = None
-        if request.is_ajax():
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
             request.window_key = request.META.get(
                 "HTTP_%s" % self.ws_windowkey_header_name
             )

@@ -1,48 +1,50 @@
 df_websockets
 =============
 
-Based on [django-channels](https://channels.readthedocs.io) and [celery](https://docs.celeryproject.org/en/stable/), df_websockets simplifies communication between 
-clients and servers and processing tasks in background processes.
+`df_websockets` extends [django-channels](https://channels.readthedocs.io) to simplify communications between 
+clients and servers and to process heavy tasks in background processes.
+Background processes can use [celery](https://docs.celeryproject.org/en/stable/), `django-channels` runners, or simply different processes or threads.
 
-df_websockets is based on two main ideas:
+`df_websockets` is based on two main concepts:
 
 * _signals_, that are functions triggered both on the server or the browser  window by either the server or the client,
 * _topics_ to allow the server to send signals to any group of browser windows.
 
 Signals are exchanged between the browser window and the server using a single websocket.
-Signals triggered by the browser on the server are processed as Celery tasks (so the websocket endpoint does almost nothing).
+Signals triggered by the browser on the server are processed as background tasks (so the websocket endpoint does almost nothing).
 Signals triggered by the server can be processed as other Celery tasks and as Javascript functions on the browser.
 
 
 Requirements and installation
 -----------------------------
 
-df_config works with:
+`df_websockets` works with:
 
   * Python >= 3.6,
-  * redis >= 5.0,
   * django >= 2.0,
-  * celery >= 4.0,
-  * django-channels >= 2.0,
+  * django-channels >= 2.0.
+
+
+For production use or any multiprocess setup (even in development mode), you also need:
+
+  * [redis](https://redis.io) >= 5.0,
   * channels_redis.
 
-You also need a working [redis server](https://redis.io) and [Celery setup](https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html).
+If you want to process signals in Celery tasks rather in Channel workers, you need to setup a Celery infrastructure:
+[Celery setup](https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html).
 
 ```bash
 python -m pip install df_websockets
 ```
 
-In your settings, if you do not use `df_config`, you must add the following values:
+In your settings, you must add the following values:
 ```python
 # the ASGI application to use with gunicorn or daphne
 ASGI_APPLICATION = "df_websockets.routing.application"
 # add the required Middleware
 MIDDLEWARES = [..., "df_websockets.middleware.WebsocketMiddleware", ...]
 INSTALLED_APPS = [..., "channels", "df_websockets", ...]
-# the required redis connection 
-WEBSOCKET_REDIS_CONNECTION = {'host': 'localhost', 'port': 6379, 'db': 1, 'password': ''}
-# the endpoint for the websocket
-WEBSOCKET_URL = "/ws/"
+WEBSOCKET_WORKERS = "thread"
 # a channel layer, required by channels_redis
 CHANNEL_LAYERS = {
     'default': {
@@ -53,18 +55,25 @@ CHANNEL_LAYERS = {
     },
 }
 ```
-**You also need a fully functionnal Celery setup**.
-
 
 If you use `df_config` and you use a local Redis, you have nothing to do: settings are automatically set and everything is working as soon as a Redis is running on your machine.
 
 Now, include `js/df_websockets.min.js` in your HTML and call `df_websockets.tasks.set_websocket_topics(request)` somewhere in the Django view.
 A bidirectionnal websocket connection will be established in your page.
 
-You can start a Celery worker and the development server:
+You can start the development server:
+```bash
+python manage.py runserver
+```
+
+
+If you use Channels workers (WEBSOCKET_WORKERS = "channels"), you also need to start a Channel worker:
+```bash
+python manage.py run_worker celery
+```
+If you use Celery (WEBSOCKET_WORKERS = "celery"), you also need to start a Celery worker:
 ```bash
 python manage.py worker -Q celery
-python manage.py runserver
 ```
 
 basic usage
@@ -301,6 +310,7 @@ window.DFSignals.call('html.content', {selector: "#obj", content: "<span>hello</
 Please read the content of `npm/df_websockets/base.js` for the whole list of available signals. 
 You can also create some shortcuts for the most common signals.
 
+
 Checklist 
 ---------
 
@@ -394,11 +404,6 @@ LOGGING = {
         },
         "daphne.cli": {"handlers": [], "level": "INFO", "propagate": True},
         "mail.log": {"handlers": [], "level": "INFO", "propagate": True},
-        "django_celery_beat.schedulers": {
-            "handlers": [],
-            "level": "WARN",
-            "propagate": True,
-        },
         "aiohttp.access": {
             "handlers": ["stderr.debug.django.server"],
             "level": "INFO",
@@ -410,11 +415,6 @@ LOGGING = {
             "propagate": False,
         },
         "django.channels.server": {
-            "handlers": ["stderr.debug.django.server"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "geventwebsocket.handler": {
             "handlers": ["stderr.debug.django.server"],
             "level": "INFO",
             "propagate": False,

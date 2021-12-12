@@ -26,7 +26,6 @@ Use these functions for:
 
 """
 
-
 import json
 import logging
 import multiprocessing.pool
@@ -34,39 +33,27 @@ import os
 import uuid
 from functools import lru_cache
 from importlib import import_module
-
-# noinspection PyPackageRequirements
-from typing import Dict
+from typing import Dict, List
 
 import django
 from asgiref.sync import async_to_sync
 
 try:
-    # noinspection PyPackageRequirements
     from celery import shared_task as celery_shared_task
 except ImportError:
     celery_shared_task = None
 
-# noinspection PyPackageRequirements
 from channels import DEFAULT_CHANNEL_LAYER
 
-# noinspection PyPackageRequirements
 from channels.layers import get_channel_layer
 
-# noinspection PyPackageRequirements
 from django.apps import apps
 
-# noinspection PyPackageRequirements
-from django.conf import settings
+from django.core.cache import cache
 
-# noinspection PyPackageRequirements
 from django.core.exceptions import ImproperlyConfigured
 
-# noinspection PyPackageRequirements
 from django.utils.module_loading import import_string
-
-# noinspection PyPackageRequirements
-from redis import ConnectionPool, StrictRedis
 
 from df_websockets import ws_settings
 from df_websockets.decorators import (
@@ -76,7 +63,8 @@ from df_websockets.decorators import (
     SignalConnection,
 )
 from df_websockets.load import load_celery
-from df_websockets.utils import Worker, valid_topic_name
+from df_websockets.constants import Worker
+from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
 logger = logging.getLogger("df_websockets.signals")
@@ -108,31 +96,6 @@ SYNC = Constant("SYNC")
 _signal_encoder = import_string(ws_settings.WEBSOCKET_SIGNAL_ENCODER)
 _topic_serializer = import_string(ws_settings.WEBSOCKET_TOPIC_SERIALIZER)
 
-__values = {
-    "host": settings.WEBSOCKET_REDIS_CONNECTION.get("host", "localhost"),
-    "port": ":%s" % settings.WEBSOCKET_REDIS_CONNECTION["port"]
-    if settings.WEBSOCKET_REDIS_CONNECTION.get("port")
-    else "",
-    "db": settings.WEBSOCKET_REDIS_CONNECTION.get("db", 1),
-    "password": ":%s@" % settings.WEBSOCKET_REDIS_CONNECTION["password"]
-    if settings.WEBSOCKET_REDIS_CONNECTION.get("password")
-    else "",
-}
-redis_connection_pool = ConnectionPool.from_url(
-    "redis://%(password)s%(host)s%(port)s/%(db)s" % __values,
-    retry_on_timeout=True,
-    socket_keepalive=True,
-)
-
-
-def get_websocket_redis_connection():
-    """Return a valid Redis connection, using a connection pool."""
-    return StrictRedis(
-        connection_pool=redis_connection_pool,
-        retry_on_timeout=True,
-        socket_keepalive=True,
-    )
-
 
 def set_websocket_topics(request, *topics):
     """Use it in a Django view for setting websocket topics. Any signal sent to one of these topics will be received
@@ -143,10 +106,8 @@ def set_websocket_topics(request, *topics):
     """
     # noinspection PyTypeChecker
     if not hasattr(request, "window_key"):
-        raise ImproperlyConfigured("You should use the WebsocketMiddleware middleware")
-    token = request.window_key
+        raise ImproperlyConfigured("WebsocketMiddleware middleware is required.")
     request.has_websocket_topics = True
-    prefix = ws_settings.WEBSOCKET_REDIS_PREFIX
     request = WindowInfo.from_request(request)
     topic_strings = {_topic_serializer(request, x) for x in topics if x is not SERVER}
     # noinspection PyUnresolvedReferences,PyTypeChecker
@@ -154,13 +115,11 @@ def set_websocket_topics(request, *topics):
         topic_strings.add(_topic_serializer(request, USER))
     topic_strings.add(_topic_serializer(request, WINDOW))
     topic_strings.add(_topic_serializer(request, BROADCAST))
-    connection = get_websocket_redis_connection()
-    redis_key = "%s%s" % (prefix, token)
-    connection.delete(redis_key)
-    for topic in topic_strings:
-        if topic is not None:
-            connection.rpush(redis_key, prefix + topic)
-    connection.expire(redis_key, ws_settings.WEBSOCKET_REDIS_EXPIRE)
+    topic_string = json.dumps(list(topic_strings))
+    # noinspection PyUnresolvedReferences
+    cache_key = "%s%s" % (ws_settings.WEBSOCKET_REDIS_PREFIX, request.window_key)
+    cache.set(cache_key, topic_string, ws_settings.WEBSOCKET_REDIS_EXPIRE)
+    logger.debug("websocket %s is now bound to topics %s", cache_key, topic_string)
 
 
 def trigger(window_info, signal_name, to=None, **kwargs):
@@ -252,15 +211,15 @@ def _trigger_signal(
     serialized_client_topics = []
     to_server = False
     to_sync = False
-    logger.debug('received signal "%s" to %r' % (signal_name, to))
+    logger.debug('received signal "%s" to %r', (signal_name, to))
     for topic in to:
         if topic is SERVER:
             if signal_name not in REGISTERED_SIGNALS:
-                logger.debug('Signal "%s" is unknown by the server.' % signal_name)
+                logger.debug('Signal "%s" is unknown by the server.', signal_name)
             to_server = True
         elif topic is SYNC:
             if signal_name not in REGISTERED_SIGNALS:
-                logger.debug('Signal "%s" is unknown by the server.' % signal_name)
+                logger.debug('Signal "%s" is unknown by the server.', signal_name)
             to_sync = True
         else:
             serialized_topic = _topic_serializer(window_info, topic)
@@ -274,7 +233,9 @@ def _trigger_signal(
     if countdown:
         background_kwargs["countdown"] = countdown
     if background_kwargs and ws_settings.WEBSOCKET_WORKERS != Worker.WORKER_CELERY:
-        raise ValueError("Unable to use eta, countdown or expires in signals when not using Celery.")
+        raise ValueError(
+            "Unable to use eta, countdown or expires in signals when not using Celery."
+        )
     queues = {
         x.get_queue(window_info, kwargs)
         for x in REGISTERED_SIGNALS.get(signal_name, [])
@@ -316,16 +277,17 @@ def _trigger_signal(
             ]
             if ws_settings.WEBSOCKET_WORKERS == Worker.WORKER_CELERY:
                 call_celery_task(
-                celery_args, queue=queue, **background_kwargs,
-            )
+                    celery_args,
+                    queue=queue,
+                    **background_kwargs,
+                )
             elif ws_settings.WEBSOCKET_WORKERS == Worker.WORKER_CHANNEL:
                 call_channel_task(celery_args, queue)
             else:
                 call_thread_task(celery_args, queue)
     if serialized_client_topics and not background_kwargs:
         signal_id = str(uuid.uuid4())
-        for topic in serialized_client_topics:
-            _call_ws_signal(signal_name, signal_id, topic, kwargs)
+        _call_ws_signal(signal_name, signal_id, serialized_client_topics, kwargs)
 
 
 def call_celery_task(args, queue, expires=None, eta=None, countdown=None):
@@ -337,17 +299,22 @@ def call_celery_task(args, queue, expires=None, eta=None, countdown=None):
 def call_channel_task(args, queue):
     channel_layer = get_channel_layer(DEFAULT_CHANNEL_LAYER)
     async_to_sync(channel_layer.send)(
-        queue, {"type": "process.signal", "args": args},
+        queue,
+        {"type": "process.signal", "args": args},
     )
 
 
 def call_thread_task(args, queue):
     if queue not in _PROCESS_POOLS:
-        pool_size = ws_settings.WEBSOCKET_POOL_SIZES.get(queue, ws_settings.WEBSOCKET_POOL_SIZES.get(None, 5))
+        pool_size = ws_settings.WEBSOCKET_POOL_SIZES.get(
+            queue, ws_settings.WEBSOCKET_POOL_SIZES.get(None, 5)
+        )
         if ws_settings.WEBSOCKET_WORKERS == Worker.WORKER_THREAD:
             pool = multiprocessing.pool.ThreadPool(pool_size)
         else:
-            pool = multiprocessing.pool.Pool(pool_size, initializer=django.setup, initargs=())
+            pool = multiprocessing.pool.Pool(
+                pool_size, initializer=django.setup, initargs=()
+            )
         _PROCESS_POOLS[queue] = pool
     pool = _PROCESS_POOLS[queue]  # type: multiprocessing.pool.Pool
     pool.apply_async(process_task, args=args)
@@ -364,16 +331,15 @@ def process_task(
     celery_request=None,
 ):
     logger.info(
-        'Signal "%s" called on queue "%s" to topics %s (from client?: %s, to server?: %s)'
-        % (signal_name, queue, serialized_client_topics, from_client, to_server)
+        'Signal "%s" called on queue "%s" to topics %s (from client?: %s, to server?: %s)',
+        (signal_name, queue, serialized_client_topics, from_client, to_server),
     )
     try:
         if kwargs is None:
             kwargs = {}
         if serialized_client_topics:
             signal_id = str(uuid.uuid4())
-            for topic in serialized_client_topics:
-                _call_ws_signal(signal_name, signal_id, topic, kwargs)
+            _call_ws_signal(signal_name, signal_id, serialized_client_topics, kwargs)
         window_info = WindowInfo.from_dict(window_info_dict)
         import_signals_and_functions()
         if celery_request is not None:
@@ -395,34 +361,20 @@ def process_task(
         logger.exception(e)
 
 
-def _call_ws_signal(signal_name, signal_id, serialized_topic, kwargs):
+def _call_ws_signal(signal_name: str, signal_id, serialized_topics: List[str], kwargs):
     serialized_message = json.dumps(
         {"signal": signal_name, "opts": kwargs, "signal_id": signal_id},
         cls=_signal_encoder,
     )
-    topic = ws_settings.WEBSOCKET_REDIS_PREFIX + serialized_topic
     channel_layer = get_channel_layer(DEFAULT_CHANNEL_LAYER)
-    logger.debug("send message to topic %r" % topic)
-    topic_valid = valid_topic_name(topic)
-    # noinspection PyTypeChecker
-    async_to_sync(channel_layer.group_send)(
-        topic_valid, {"type": "ws_message", "message": serialized_message},
-    )
-
-
-def _return_ws_function_result(window_info, result_id, result, exception=None):
-    connection = get_websocket_redis_connection()
-    json_msg = {
-        "result_id": result_id,
-        "result": result,
-        "exception": str(exception) if exception else None,
-    }
-    serialized_message = json.dumps(json_msg, cls=_signal_encoder)
-    serialized_topic = _topic_serializer(window_info, WINDOW)
-    if serialized_topic:
-        topic = ws_settings.WEBSOCKET_REDIS_PREFIX + serialized_topic
-        logger.debug("send function result to topic %r" % topic)
-        connection.publish(topic, serialized_message.encode("utf-8"))
+    for serialized_topic in serialized_topics:
+        logger.debug("send message to topic %r", serialized_topic)
+        topic_valid = valid_topic_name(serialized_topic)
+        # noinspection PyTypeChecker
+        async_to_sync(channel_layer.group_send)(
+            topic_valid,
+            {"type": "ws_message", "message": serialized_message},
+        )
 
 
 @lru_cache()
@@ -442,11 +394,15 @@ def import_signals_and_functions():
         except Exception as e:
             logger.exception(e)
 
-    load_celery()
+    if ws_settings.WEBSOCKET_WORKERS == Worker.WORKER_CELERY:
+        load_celery()
     for app_config in apps.app_configs.values():
         app = app_config.name
         package_dir = app_config.path
-        for module_name in ("signals", "forms", "functions"):
+        for module_name in (
+            "signals",
+            "forms",
+        ):
             if os.path.isfile(os.path.join(package_dir, "%s.py" % module_name)):
                 try_import("%s.%s" % (app, module_name))
             elif os.path.isdir(os.path.join(package_dir, module_name)):
@@ -454,11 +410,8 @@ def import_signals_and_functions():
                     f = os.path.splitext(f)[0]
                     try_import("%s.%s.%s" % (app, module_name, f))
     logger.debug(
-        "Found signals: %s"
-        % ", ".join(["%s (%d)" % (k, len(v)) for (k, v) in REGISTERED_SIGNALS.items()])
-    )
-    logger.debug(
-        "Found functions: %s" % ", ".join([str(k) for k in REGISTERED_FUNCTIONS])
+        "Found signals: %s",
+        ", ".join(["%s (%d)" % (k, len(v)) for (k, v) in REGISTERED_SIGNALS.items()]),
     )
 
 

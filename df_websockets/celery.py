@@ -22,13 +22,8 @@ You should not use this module (or rename it), as it is only used to auto-discov
 
 import logging.config
 
-# noinspection PyPackageRequirements
 from celery import Celery, signals
-
-# noinspection PyPackageRequirements
 from django.apps import apps
-
-# noinspection PyPackageRequirements
 from django.conf import settings
 
 
