@@ -129,8 +129,9 @@ class SerializedForm:
 
     """
 
-    def __init__(self, form_cls):
+    def __init__(self, form_cls, allow_none: bool = True):
         self.form_cls = form_cls
+        self.allow_none = allow_none
 
     def __call__(self, value, *args, **kwargs):
         """
@@ -141,8 +142,10 @@ class SerializedForm:
         """
         from django.forms import FileField
 
-        if value is None:
+        if value is None and self.allow_none:
             return self.form_cls(*args, **kwargs)
+        elif value is None:
+            raise ValueError
 
         post_data = QueryDict("", mutable=True)
         file_data = QueryDict("", mutable=True)

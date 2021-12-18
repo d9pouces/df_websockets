@@ -24,14 +24,14 @@ from channels.consumer import SyncConsumer
 from channels.generic.websocket import WebsocketConsumer
 from channels.routing import ChannelNameRouter
 from django import http
-from django.core.cache import cache
+from django.core import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.core.handlers.base import BaseHandler
 from django.http import HttpRequest, HttpResponse, QueryDict
 from django.utils.module_loading import import_string
 
 from df_websockets import ws_settings
-from df_websockets.middleware import WebsocketMiddleware
+from df_websockets.constants import WEBSOCKET_KEY_COOKIE_NAME
 from df_websockets.tasks import SERVER, _trigger_signal, process_task
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
@@ -50,7 +50,7 @@ def get_websocket_topics(request: Union[HttpRequest, WindowInfo]):
         ws_settings.WEBSOCKET_REDIS_PREFIX,
         request.window_key,
     )
-    topic_string = cache.get(cache_key, "[]")
+    topic_string = cache.cache.get(cache_key, "[]")
     logger.debug("websocket %s is bound to topics %s", cache_key, topic_string)
     return [valid_topic_name(x) for x in json.loads(topic_string)]
 
@@ -78,9 +78,7 @@ class DFConsumer(WebsocketConsumer):
             request = self.build_http_request()
             handler = get_handler()
             handler.get_response(request)
-            request.window_key = request.GET.get(
-                WebsocketMiddleware.ws_windowkey_get_parameter, ""
-            )
+            request.window_key = request.COOKIES.get(WEBSOCKET_KEY_COOKIE_NAME, "")
             self.topics = get_websocket_topics(request)
             self.window_info = WindowInfo.from_request(request)
             if self.channel_layer:

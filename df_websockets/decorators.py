@@ -408,37 +408,6 @@ def signal(
     return wrapped
 
 
-# noinspection PyShadowingBuiltins
-def function(fn=None, path=None, is_allowed_to=server_side, queue=None):
-    """Allow the following Python code to be called from the JavaScript code.
-    The result of this function is serialized (with JSON and `settings.WEBSOCKET_SIGNAL_ENCODER`) before being
-    sent to the JavaScript part.
-
-    .. code-block:: python
-
-      from df_websockets.decorators import function, everyone
-
-      @function(path='myproject.myfunc', is_allowed_to=everyone)
-      def myfunc(window_info, arg=None)
-          print(arg)
-          return 42
-
-    The this function can be called from your JavaScript code:
-
-    .. code-block:: javascript
-
-      $.dfws.myproject.myfunc({arg: 3123}).then(function(result) { alert(result); });
-
-    """
-    return signal(
-        fn=fn,
-        path=path,
-        is_allowed_to=is_allowed_to,
-        queue=queue,
-        cls=FunctionConnection,
-    )
-
-
 def validate_form(form_cls=None, path=None, is_allowed_to=server_side, queue=None):
     """
         Decorator for automatically validating HTML forms. Just add it to your Python code and set the 'onchange'

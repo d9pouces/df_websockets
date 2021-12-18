@@ -3,7 +3,6 @@ df_websockets
 
 `df_websockets` extends [django-channels](https://channels.readthedocs.io) to simplify communications between 
 clients and servers and to process heavy tasks in background processes.
-Background processes can use [celery](https://docs.celeryproject.org/en/stable/), `django-channels` runners, or simply different processes or threads.
 
 `df_websockets` is based on two main concepts:
 
@@ -11,8 +10,10 @@ Background processes can use [celery](https://docs.celeryproject.org/en/stable/)
 * _topics_ to allow the server to send signals to any group of browser windows.
 
 Signals are exchanged between the browser window and the server using a single websocket.
-Signals triggered by the browser on the server are processed as background tasks (so the websocket endpoint does almost nothing).
-Signals triggered by the server can be processed as other Celery tasks and as Javascript functions on the browser.
+Signals that are triggered by the browser on the server are processed as background tasks (so the websocket endpoint does almost nothing).
+Signals that are triggered by the server can be processed as background tasks on the serveur and as Javascript functions on the browser.
+
+Background processes can use [celery](https://docs.celeryproject.org/en/stable/), [channels](https://pypi.org/project/channels/) workers, or simply different processes or threads.
 
 
 Requirements and installation
@@ -20,15 +21,15 @@ Requirements and installation
 
 `df_websockets` works with:
 
-  * Python >= 3.6,
-  * django >= 2.0,
-  * django-channels >= 2.0.
+  * [Python](https://www.python.org) >= 3.6,
+  * [django](https://pypi.org/project/Django/) >= 2.0,
+  * [channels](https://pypi.org/project/channels/) >= 2.0.
 
 
 For production use or any multiprocess setup (even in development mode), you also need:
 
   * [redis](https://redis.io) >= 5.0,
-  * channels_redis.
+  * [channels_redis](https://pypi.org/project/channels-redis/) >= 3.3.
 
 If you want to process signals in Celery tasks rather in Channel workers, you need to setup a Celery infrastructure:
 [Celery setup](https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html).
@@ -133,10 +134,13 @@ All open windows will react.
 Topics
 ------
 
-When the server triggers a signal, it can select if the signal is called on the server or on some browser windows.
+You can select the set of connected browser windows that receive a signal triggered by the server, in addition of processing this signal on the server.
 
 A Django view using this signal system must call `set_websocket_topics` to add some ”topics” to this view.
-`js/df_websockets.min.js` must also be added to the resulting HTML. 
+When you trigger a signal on the server, you can target any set topic. All windows featuring this topic will receive this signal.
+
+_For example, assume that multiple clients open a specific article on a blog. At any time, you can open Python shell in a terminal and trigger a signal on all these windows._  
+
 
 ```python
 from df_websockets.tasks import set_websocket_topics
@@ -145,7 +149,7 @@ def any_view(request):  # this is a standard Django view
     # useful code
     obj1 = MyModel.objects.get(id=42)
     set_websocket_topics(request, [obj1])
-    return TemplateResponse("my/template.html", {})
+    return TemplateResponse("my/template.html", {})  # do not forget to add `js/df_websockets.min.js` to this HTML
 ```
 
 `obj1` must be a Python object that is handled by the `WEBSOCKET_TOPIC_SERIALIZER` function. By default, any string and Django models are valid.
@@ -244,8 +248,8 @@ When the field "title" is modified, `my_signal_function(window_info, title="new 
 Testing signals
 ---------------
 
-The signal framework requires a working Redis and a worker process. However, if you only want to check if a signal
-has been called in unitary tests, you can use :class:`df_websockets.utils.SignalQueue`.
+In production, the signal framework requires a working Redis and worker processes.
+However, if you only want to check if a signal has been called in unitary tests, you can use :class:`df_websockets.utils.SignalQueue`.
 Both server-side and client-side signals are kept into memory:
 
 * `df_websockets.testing.SignalQueue.ws_signals`,
