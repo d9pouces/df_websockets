@@ -7,6 +7,12 @@ __pycache__/
 # C extensions
 *.so
 
+# Test-generated files #
+_trial_marker
+@test_*_tmp
+_trial_temp/
+results
+
 # Distribution / packaging
 .Python
 env/

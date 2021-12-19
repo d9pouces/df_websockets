@@ -58,7 +58,6 @@ from django.utils.module_loading import import_string
 from df_websockets import ws_settings
 from df_websockets.decorators import (
     DynamicQueueName,
-    REGISTERED_FUNCTIONS,
     REGISTERED_SIGNALS,
     SignalConnection,
 )
@@ -415,12 +414,6 @@ def import_signals_and_functions():
 def get_expected_queues():
     expected_queues = set()
     import_signals_and_functions()
-    for connection in REGISTERED_FUNCTIONS.values():
-        if isinstance(connection.queue, DynamicQueueName):
-            for queue_name in connection.queue.get_available_queues():
-                expected_queues.add(queue_name)
-        elif not callable(connection.queue):
-            expected_queues.add(connection.queue)
     for connections in REGISTERED_SIGNALS.values():
         for connection in connections:
             if isinstance(connection.queue, DynamicQueueName):

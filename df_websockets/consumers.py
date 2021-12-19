@@ -103,19 +103,16 @@ class DFConsumer(WebsocketConsumer):
         request.method = "GET"
         request.path_info = self.scope["path"]
         request.GET = QueryDict(query_string=query_string)
-        for name, value in self.scope.get("headers", []):
-            name = name.decode("latin1")
-            if name == "content-length":
-                corrected_name = "CONTENT_LENGTH"
-            elif name == "content-type":
-                corrected_name = "CONTENT_TYPE"
-            else:
-                corrected_name = "HTTP_%s" % name.upper().replace("-", "_")
+        for header_name_bytes, header_value_bytes in self.scope.get("headers", []):
+            header_name = header_name_bytes.decode("latin1").upper().replace("-", "_")
+            if header_name not in ("CONTENT_TYPE", "CONTENT_LENGTH"):
+                header_name = "HTTP_%s" % header_name_bytes
             # HTTPbis say only ASCII chars are allowed in headers, but we latin1 just in case
-            value = value.decode("latin1")
-            if corrected_name in request.META:
-                value = request.META[corrected_name] + "," + value
-            request.META[corrected_name] = value
+            header_value = header_value_bytes.decode("latin1")
+            if header_name in request.META:
+                request.META[header_name] += "," + header_value
+            else:
+                request.META[header_name] = header_value
         if self.scope.get("client", None):
             request.META["REMOTE_ADDR"] = self.scope["client"][0]
             request.META["REMOTE_HOST"] = request.META["REMOTE_ADDR"]

@@ -70,15 +70,11 @@ import re
 from inspect import signature
 from typing import Dict, List, Type
 
-from django import forms
-
 from df_websockets import ws_settings
-from df_websockets.utils import SerializedForm
 
 logger = logging.getLogger("df_websockets.signals")
 
 REGISTERED_SIGNALS = {}  # type: Dict[str, List[Connection]]
-REGISTERED_FUNCTIONS = {}  # type: Dict[str, Connection]
 
 
 class DynamicQueueName:
@@ -349,42 +345,6 @@ class SignalConnection(Connection):
         trigger_signal(window_info, self.path, to=SERVER, kwargs=kwargs)
 
 
-class FunctionConnection(Connection):
-    """represent a WS function """
-
-    def register(self):
-        """register the WS function into the `REGISTERED_FUNCTIONS` dict """
-        REGISTERED_FUNCTIONS[self.path] = self
-
-
-class FormValidator(FunctionConnection):
-    """Special signal, dedicated to dynamically validate a HTML form.
-
-    However, files cannot be sent in the validation process.
-    """
-
-    def signature_check(self, fn):
-        """override the default method for checking the arguments, since they are independent from the Django Form."""
-        if not isinstance(fn, type) or not issubclass(fn, forms.BaseForm):
-            raise ValueError("validate_form only apply to Django Forms")
-        self.required_arguments_names = set()
-        self.optional_arguments_names = {"data"}
-        self.accepted_argument_names = {"data"}
-
-    def __call__(self, window_info, data=None):
-        form = SerializedForm(self.function)(data)
-        valid = form.is_valid()
-        return {
-            "valid": valid,
-            "errors": {
-                f: e.get_json_data(escape_html=False) for f, e in form.errors.items()
-            },
-            "help_texts": {
-                f: e.help_text for (f, e) in form.fields.items() if e.help_text
-            },
-        }
-
-
 def signal(
     fn=None,
     path=None,
@@ -405,53 +365,4 @@ def signal(
 
     if fn is not None:
         wrapped = wrapped(fn)
-    return wrapped
-
-
-def validate_form(form_cls=None, path=None, is_allowed_to=server_side, queue=None):
-    """
-        Decorator for automatically validating HTML forms. Just add it to your Python code and set the 'onchange'
-        attribute to your HTML code. The `path` argument should be unique to your form class.
-
-        :param form_cls: any subclass of :class:`django.forms.Form`
-        :param path: unique name of your form
-        :param is_allowed_to: callable for restricting the use of the form validation
-        :param queue: name (or callable) for ensuring small response times
-
-    .. code-block:: python
-
-        from df_websockets.decorators import everyone, validate_form
-
-        @validate_form(path='df_websockets.validate.search', is_allowed_to=everyone, queue='fast')
-        class MyForm(forms.Form):
-            name = forms.CharField()
-            ...
-
-
-    .. code-block:: html
-
-        <form onchange="$.df.validateForm(this, 'df_websockets.validate.search');"  action="?" method="post">
-            {% csrf_token %}
-            {% bootstrap_form form %}
-            <input type="submit" class="btn btn-primary" value="{% trans 'Search' %}">
-        </form>
-
-    """
-    if path is None or is_allowed_to is server_side:
-        # @validate_form
-        # class MyForm(forms.Form):
-        #     ...
-        raise ValueError(
-            "is_allowed_to and path are not configured for the validate_form decorator"
-        )
-
-    def wrapped(form_cls_):
-        wrapper = FormValidator(
-            form_cls_, path=path, is_allowed_to=is_allowed_to, queue=queue
-        )
-        wrapper.register()
-        return form_cls_
-
-    if form_cls:
-        return wrapped(form_cls)
     return wrapped

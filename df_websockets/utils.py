@@ -38,19 +38,19 @@ class RE:
     Your code won't be called for values like "abc".
 
 
-    :param value: regexp pattern
-    :type value: `str`
+    :param pattern: regexp pattern
+    :type pattern: `str`
     :param caster: if not `None`, any callable applied to the value (if valid)
     :type caster: `callable` or `None`
     :param flags: regexp flags passed to `re.compile`
     :type flags: `int`
     """
 
-    def __init__(self, value, caster=None, flags=0):
+    def __init__(self, pattern: str, caster=None, flags=0):
         self.caster = caster
-        self.regexp = re.compile(value, flags=flags)
+        self.regexp = re.compile(pattern, flags=flags)
 
-    def __call__(self, value):
+    def __call__(self, value: str):
         matcher = self.regexp.match(str(value))
         if not matcher:
             raise ValueError
