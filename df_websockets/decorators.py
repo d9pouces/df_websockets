@@ -1,4 +1,4 @@
-"""Decorators to declare signals and remote functions
+r"""Decorators to declare signals and remote functions
 ==================================================
 
 ALso define common functions for allowing (or not) signal calls to user, and several tools for checking arguments
@@ -79,17 +79,17 @@ REGISTERED_SIGNALS = {}  # type: Dict[str, List[Connection]]
 
 class DynamicQueueName:
     """Allow to dynamically select a Celery queue when the signal is called.
-    You can use it if all signals of a user must be processed by the same worker, but you still
-      want to dispatch signals to several workers.
 
+    You can use it if all signals of a user must be processed by the same worker, but you still
+    want to dispatch signals to several workers.
     """
 
     def __call__(self, connection, window_info, original_kwargs):
-        """called for each signal call to dispatch this connection"""
+        """Dispatch this connection at each signal call."""
         raise NotImplementedError
 
     def get_available_queues(self):
-        """return the set of all queues that can be returned by the `__call__` method.
+        """Return the set of all queues that can be returned by the `__call__` method.
         However, if this method is not implemented, the impact is currently limited:
           * the monitoring view will not display all required queues,
           * the systemd service files (provided by the `packaging` command) will not create all required workers.
@@ -129,7 +129,8 @@ class RandomDynamicQueueName(DynamicQueueName):
 
 # noinspection PyUnusedLocal
 def server_side(connection, window_info, kwargs):
-    """never allows a signal to be called from WebSockets; this signal can only be called from Python code.
+    """Never allows a signal to be called from WebSockets; this signal can only be called from Python code.
+
     This is the default choice.
 
     >>> # noinspection PyShadowingNames
@@ -143,7 +144,7 @@ def server_side(connection, window_info, kwargs):
 
 # noinspection PyUnusedLocal
 def everyone(connection, window_info, kwargs):
-    """allow everyone to call a Python WS signal or remote function
+    """Allow everyone to call a Python WS signal or remote function
 
     >>> @signal(is_allowed_to=everyone)
     ... def my_signal(request, arg1=None):
@@ -155,7 +156,7 @@ def everyone(connection, window_info, kwargs):
 
 # noinspection PyUnusedLocal
 def is_authenticated(connection, window_info, kwargs):
-    """restrict a WS signal or a WS function to authenticated users
+    """Restrict a WS signal or a WS function to authenticated users
 
     >>> @signal(is_allowed_to=is_authenticated)
     ... def my_signal(request, arg1=None):
@@ -167,7 +168,7 @@ def is_authenticated(connection, window_info, kwargs):
 
 # noinspection PyUnusedLocal
 def is_anonymous(connection, window_info, kwargs):
-    """restrict a WS signal or a WS function to anonymous users
+    """Restrict a WS signal or a WS function to anonymous users
 
     >>> @signal(is_allowed_to=is_anonymous)
     ... def my_signal(request, arg1=None):
@@ -179,7 +180,7 @@ def is_anonymous(connection, window_info, kwargs):
 
 # noinspection PyUnusedLocal
 def is_staff(connection, window_info, kwargs):
-    """restrict a WS signal or a WS function to staff users
+    """Restrict a WS signal or a WS function to staff users
 
     >>> @signal(is_allowed_to=is_staff)
     ... def my_signal(request, arg1=None):
@@ -221,7 +222,9 @@ class has_perm:
 
 class Connection:
     """Parent class of a registered signal or remote function.
-    Do not use it directly."""
+
+    Do not use it directly.
+    """
 
     required_function_arg = "window_info"
 
@@ -294,13 +297,19 @@ class Connection:
             except ValueError:
                 logger.warning(
                     '%s("%s"): Invalid value %r for argument "%s".',
-                    cls, self.path, kwargs[k], k,
+                    cls,
+                    self.path,
+                    kwargs[k],
+                    k,
                 )
                 return None
             except TypeError:
                 logger.warning(
                     '%s("%s"): Invalid value %r for argument "%s".',
-                    cls, self.path, kwargs[k], k,
+                    cls,
+                    self.path,
+                    kwargs[k],
+                    k,
                 )
                 return None
         for k in self.required_arguments_names:
@@ -336,7 +345,7 @@ class SignalConnection(Connection):
     """represents a connected signal."""
 
     def register(self):
-        """register the signal into the `REGISTERED_SIGNALS` dict """
+        """register the signal into the `REGISTERED_SIGNALS` dict."""
         REGISTERED_SIGNALS.setdefault(self.path, []).append(self)
 
     def call(self, window_info, **kwargs):
@@ -352,10 +361,9 @@ def signal(
     queue=None,
     cls: Type[Connection] = SignalConnection,
 ):
-    """Decorator to use for registering a new signal.
-    This decorator returns the original callable as-is.
+    """Decorate functions to register a new signal.
 
-    TODO: add a special queue SYNC
+    This decorator returns the original callable as-is.
     """
 
     def wrapped(fn_):

@@ -44,28 +44,23 @@ except ImportError:
     celery_shared_task = None
 
 from channels import DEFAULT_CHANNEL_LAYER
-
 from channels.layers import get_channel_layer
-
 from django.apps import apps
-
 from django.core import cache
-
 from django.core.exceptions import ImproperlyConfigured
-
 from django.utils.module_loading import import_string
 
 from df_websockets import ws_settings
-from df_websockets.decorators import (
-    DynamicQueueName,
-    REGISTERED_SIGNALS,
-    SignalConnection,
-)
 from df_websockets.constants import (
     WORKER_CELERY,
     WORKER_CHANNEL,
     WORKER_PROCESS,
     WORKER_THREAD,
+)
+from df_websockets.decorators import (
+    REGISTERED_SIGNALS,
+    DynamicQueueName,
+    SignalConnection,
 )
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
@@ -315,7 +310,8 @@ def call_task(worker_mode, queue, signal_args, celery_options):
         logger.debug("Call Channels task to queue %s.", queue)
         channel_layer = get_channel_layer(DEFAULT_CHANNEL_LAYER)
         async_to_sync(channel_layer.send)(
-            queue, {"type": "process.signal", "args": signal_args},
+            queue,
+            {"type": "process.signal", "args": signal_args},
         )
     elif worker_mode in {WORKER_THREAD, WORKER_PROCESS}:
         if queue not in _PROCESS_POOLS:
@@ -399,7 +395,8 @@ async def _call_ws_signal(
         topic_valid = valid_topic_name(serialized_topic)
         # noinspection PyTypeChecker
         await channel_layer.group_send(
-            topic_valid, {"type": "ws_message", "message": serialized_message},
+            topic_valid,
+            {"type": "ws_message", "message": serialized_message},
         )
 
 

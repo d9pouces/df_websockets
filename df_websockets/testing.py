@@ -62,7 +62,7 @@ class SignalQueue:
         self._old_ws_functions = []
 
     def activate(self):
-        """replace private function that push signal calls to Celery or Websockets """
+        """Replace private function that push signal calls to Celery or Websockets."""
         # call_task(worker_mode, queue, signal_args, celery_options)
         task_function = getattr(tasks_module, "process_task")
         encoder = getattr(tasks_module, "_signal_encoder")
@@ -92,19 +92,19 @@ class SignalQueue:
                 serialized_topics = [serialized_topics]
             for serialized_topic in serialized_topics:
                 self.ws_signals.setdefault(serialized_topic, []).append(
-                (signal_name, kwargs)
-            )
+                    (signal_name, kwargs)
+                )
 
         self._old_ws_functions.append(getattr(tasks_module, "_call_ws_signal"))
         setattr(tasks_module, "_call_ws_signal", ws_signal_call)
 
     def deactivate(self):
-        """ replace the normal private functions for calling Celery or websockets signals"""
+        """Replace the normal private functions for calling Celery or websockets signals."""
         setattr(tasks_module, "call_task", self._old_call_task_functions.pop())
         setattr(tasks_module, "_call_ws_signal", self._old_ws_functions.pop())
 
     def execute_delayed_signals(self, queues=None):
-        """ execute the Celery signals """
+        """Execute the Celery signals."""
         task = getattr(tasks_module, "_server_signal_call")
         if queues is None:
             queues = self.python_signals.keys()

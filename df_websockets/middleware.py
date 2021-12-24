@@ -74,10 +74,6 @@ class WebsocketMiddleware(MiddlewareMixin):
             "httponly": False,
             "samesite": settings.CSRF_COOKIE_SAMESITE,
         }
-        response.set_cookie(
-            WEBSOCKET_URL_COOKIE_NAME, quote_plus(ws_url), **kwargs
-        )
-        response.set_cookie(
-            WEBSOCKET_KEY_COOKIE_NAME, window_key, **kwargs
-        )
+        response.set_cookie(WEBSOCKET_URL_COOKIE_NAME, quote_plus(ws_url), **kwargs)
+        response.set_cookie(WEBSOCKET_KEY_COOKIE_NAME, window_key, **kwargs)
         return response

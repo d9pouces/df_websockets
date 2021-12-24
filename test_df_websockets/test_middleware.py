@@ -36,16 +36,13 @@ class TestWebsocketMiddleware(TestCase):
         self.assertFalse(request.has_websocket_topics)
         # noinspection PyUnresolvedReferences
         self.assertIsNotNone(request.window_key)
-        response_ = cls.process_response(request, response)
+        cls.process_response(request, response)
 
     def test_websocketmiddleware(self):
 
         request = HttpRequest()
-        with self.settings(ALLOWED_HOSTS=['example.com', 'example.com:8000']):
-            request.META = {
-                "SERVER_NAME": "example.com",
-                "SERVER_PORT": "8000"
-            }
+        with self.settings(ALLOWED_HOSTS=["example.com", "example.com:8000"]):
+            request.META = {"SERVER_NAME": "example.com", "SERVER_PORT": "8000"}
             response = HttpResponse()
             cls = WebsocketMiddleware(lambda _: HttpResponse())
             req = cls.process_request(request)
@@ -62,4 +59,6 @@ class TestWebsocketMiddleware(TestCase):
             window_key_ = response_.cookies[WEBSOCKET_KEY_COOKIE_NAME].value
             self.assertEqual(window_key, window_key_)
             ws_url = response_.cookies[WEBSOCKET_URL_COOKIE_NAME].value
-            self.assertEqual("ws://example.com:8000%s" % ws_settings.WEBSOCKET_URL, unquote(ws_url))
+            self.assertEqual(
+                "ws://example.com:8000%s" % ws_settings.WEBSOCKET_URL, unquote(ws_url)
+            )

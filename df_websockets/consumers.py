@@ -29,8 +29,7 @@ from django.core.handlers.base import BaseHandler
 from django.http import HttpRequest, HttpResponse, QueryDict
 from django.utils.module_loading import import_string
 
-from df_websockets import tasks
-from df_websockets import ws_settings
+from df_websockets import tasks, ws_settings
 from df_websockets.constants import WEBSOCKET_KEY_COOKIE_NAME
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo

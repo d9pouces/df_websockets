@@ -1,6 +1,7 @@
-from df_websockets import ws_settings
-from df_websockets.decorators import signal, REGISTERED_SIGNALS, Connection, server_side
 from django.test import TestCase
+
+from df_websockets import ws_settings
+from df_websockets.decorators import REGISTERED_SIGNALS, Connection, server_side, signal
 
 
 def test_signal(window_info, arg_1: str, arg_2: int = None):

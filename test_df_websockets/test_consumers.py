@@ -7,17 +7,12 @@ from channels.sessions import SessionMiddlewareStack
 from channels.testing import WebsocketCommunicator
 from django.core.cache.backends.locmem import LocMemCache
 from django.http import HttpRequest, HttpResponse, parse_cookie
-from django.test import TestCase
-from django.test import override_settings
+from django.test import TestCase, override_settings
 
 from df_websockets import tasks, ws_settings
 from df_websockets.consumers import DFConsumer, get_websocket_topics
 from df_websockets.middleware import WebsocketMiddleware
-from df_websockets.tasks import (
-    WINDOW,
-    _topic_serializer,
-    set_websocket_topics,
-)
+from df_websockets.tasks import WINDOW, _topic_serializer, set_websocket_topics
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
@@ -27,7 +22,8 @@ class TestGetWebsocketTopics(TestCase):
         window_info = WindowInfo()
         window_info.window_key = "test_key"
         with mock.patch(
-            "django.core.cache.cache", new=LocMemCache("name", {}),
+            "django.core.cache.cache",
+            new=LocMemCache("name", {}),
         ):
             set_websocket_topics(window_info, "test", 100)
             actual = get_websocket_topics(window_info)
@@ -38,15 +34,14 @@ class TestGetWebsocketTopics(TestCase):
                 "f6728284c836a3ebc25a6dc85847b147961a0934d10e2950c3e8f92936f10865",
             }
             self.assertEqual(
-                expected, set(actual),
+                expected,
+                set(actual),
             )
 
 
 class TestDFConsumer(TestCase):
     async def test_websocket_consumer(self):
-        """
-        Tests that WebsocketConsumer is implemented correctly.
-        """
+        """Tests that WebsocketConsumer is implemented correctly."""
         signal_calls = []
         request = HttpRequest()
         response = HttpResponse()
@@ -54,17 +49,18 @@ class TestDFConsumer(TestCase):
         domain, port = "example.com", 8000
         ws_url = ws_settings.WEBSOCKET_URL
         q_url = quote_plus("ws://%s:%s%s" % (domain, port, ws_url))
-        options = "; expires=Mon, 20 Dec 2021 18:51:51 GMT; Max-Age=86400; Path=/; SameSite=Lax"
         request.META = {"SERVER_NAME": domain, "SERVER_PORT": str(port)}
 
         def trigger_signal(*args, **kwargs):
             signal_calls.append((args, kwargs))
 
         with self.settings(
-            ALLOWED_HOSTS=[domain, "%s:%s" % (domain, port)], CSRF_COOKIE_DOMAIN=domain,
+            ALLOWED_HOSTS=[domain, "%s:%s" % (domain, port)],
+            CSRF_COOKIE_DOMAIN=domain,
         ):
             with mock.patch(
-                "df_websockets.tasks._trigger_signal", new=trigger_signal,
+                "df_websockets.tasks._trigger_signal",
+                new=trigger_signal,
             ):
 
                 cls = WebsocketMiddleware(lambda _: HttpResponse())
@@ -102,7 +98,7 @@ class TestDFConsumer(TestCase):
                 serialized_signal = json.dumps(
                     {"signal": "test.test_server", "opts": {}}
                 )
-                # await communicator.send_to(text_data=serialized_signal)
+                await communicator.send_to(text_data=serialized_signal)
                 # self.assertEqual(1, len(signal_calls))
                 # self.assertEqual(
                 #     (app.window_info, "test.test_server"), signal_calls[0][0]

@@ -13,9 +13,8 @@
 #  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
 #                                                                              #
 # ##############################################################################
-
+"""Define the web ASGI application."""
 from channels.auth import AuthMiddlewareStack
-
 from channels.routing import ProtocolTypeRouter, URLRouter
 
 try:

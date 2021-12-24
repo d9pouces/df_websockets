@@ -18,7 +18,10 @@ class TestSignalQueue(TestCase):
         window_info.window_key = "7f8d28ba4820"
         with SignalQueue() as sq:
             trigger(
-                window_info, "test.signal", to=[SERVER, WINDOW], arg_1="test",
+                window_info,
+                "test.signal",
+                to=[SERVER, WINDOW],
+                arg_1="test",
             )
         self.assertEqual(
             {"-window.7f8d28ba4820": [("test.signal", {"arg_1": "test"})]},
