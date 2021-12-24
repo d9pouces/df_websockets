@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
 from pathlib import Path
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from typing import List
 
@@ -28,8 +27,8 @@ SECRET_KEY = "=$@-4on)b3h@-6s#e-sks3!v)10&rq64+p0#c$)8-8_%=zzel("
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []  # type: List[str]
-
+ALLOWED_HOSTS = ["127.0.0.1:8000", "127.0.0.1"]  # type: List[str]
+CSRF_COOKIE_DOMAIN = "127.0.0.1"
 
 ROOT_URLCONF = "demo_df_websockets.urls"
 
@@ -134,7 +133,7 @@ LOGGING = {
         "django.db.backends": {"handlers": [], "level": "INFO", "propagate": True},
         "django.request": {"handlers": [], "level": "DEBUG", "propagate": True},
         "django.security": {"handlers": [], "level": "INFO", "propagate": True},
-        "df_websockets.signals": {"handlers": [], "level": "DEBUG", "propagate": True},
+        "df_websockets.signals": {"handlers": [], "level": "INFO", "propagate": True},
         "gunicorn.error": {"handlers": [], "level": "DEBUG", "propagate": True},
         "pip.vcs": {"handlers": [], "level": "INFO", "propagate": True},
         "py.warnings": {"handlers": [], "level": "INFO", "propagate": True},

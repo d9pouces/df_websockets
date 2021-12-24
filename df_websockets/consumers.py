@@ -23,16 +23,15 @@ from asgiref.sync import async_to_sync
 from channels.consumer import SyncConsumer
 from channels.generic.websocket import WebsocketConsumer
 from channels.routing import ChannelNameRouter
-from django import http
 from django.core import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.core.handlers.base import BaseHandler
 from django.http import HttpRequest, HttpResponse, QueryDict
 from django.utils.module_loading import import_string
 
+from df_websockets import tasks
 from df_websockets import ws_settings
 from df_websockets.constants import WEBSOCKET_KEY_COOKIE_NAME
-from df_websockets.tasks import SERVER, _trigger_signal, process_task
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
@@ -106,7 +105,7 @@ class DFConsumer(WebsocketConsumer):
         for header_name_bytes, header_value_bytes in self.scope.get("headers", []):
             header_name = header_name_bytes.decode("latin1").upper().replace("-", "_")
             if header_name not in ("CONTENT_TYPE", "CONTENT_LENGTH"):
-                header_name = "HTTP_%s" % header_name_bytes
+                header_name = "HTTP_%s" % header_name
             # HTTPbis say only ASCII chars are allowed in headers, but we latin1 just in case
             header_value = header_value_bytes.decode("latin1")
             if header_name in request.META:
@@ -124,7 +123,7 @@ class DFConsumer(WebsocketConsumer):
             request.META["SERVER_NAME"] = "unknown"
             request.META["SERVER_PORT"] = "0"
         request.META["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
-        request.COOKIES = http.parse_cookie(request.META.get("HTTP_COOKIE", ""))
+        request.COOKIES = self.scope.get("cookies", {})
         return request
 
     def disconnect(self, close_code):
@@ -147,10 +146,11 @@ class DFConsumer(WebsocketConsumer):
                 eta = int(msg.get("eta", 0)) or None
                 expires = int(msg.get("expires", 0)) or None
                 countdown = int(msg.get("countdown", 0)) or None
-                _trigger_signal(
+                # noinspection PyProtectedMember
+                tasks._trigger_signal(
                     self.window_info,
                     signal_name,
-                    to=[SERVER],
+                    to=[tasks.SERVER],
                     kwargs=kwargs,
                     from_client=True,
                     eta=eta,
@@ -176,7 +176,7 @@ class BackgroundConsumer(SyncConsumer):
             to_server,
             queue,
         ) = data["args"]
-        process_task(
+        tasks.process_task(
             signal_name,
             window_info_dict,
             kwargs=kwargs,

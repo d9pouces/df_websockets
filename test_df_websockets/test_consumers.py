@@ -1,13 +1,25 @@
+import json
 from unittest import mock
+from urllib.parse import quote_plus
 
+from channels.layers import get_channel_layer
+from channels.sessions import SessionMiddlewareStack
+from channels.testing import WebsocketCommunicator
 from django.core.cache.backends.locmem import LocMemCache
-
-from df_websockets import ws_settings
-from df_websockets.tasks import set_websocket_topics
-from df_websockets.window_info import WindowInfo
-
-from df_websockets.consumers import get_websocket_topics
+from django.http import HttpRequest, HttpResponse, parse_cookie
 from django.test import TestCase
+from django.test import override_settings
+
+from df_websockets import tasks, ws_settings
+from df_websockets.consumers import DFConsumer, get_websocket_topics
+from df_websockets.middleware import WebsocketMiddleware
+from df_websockets.tasks import (
+    WINDOW,
+    _topic_serializer,
+    set_websocket_topics,
+)
+from df_websockets.utils import valid_topic_name
+from df_websockets.window_info import WindowInfo
 
 
 class TestGetWebsocketTopics(TestCase):
@@ -28,3 +40,105 @@ class TestGetWebsocketTopics(TestCase):
             self.assertEqual(
                 expected, set(actual),
             )
+
+
+class TestDFConsumer(TestCase):
+    async def test_websocket_consumer(self):
+        """
+        Tests that WebsocketConsumer is implemented correctly.
+        """
+        signal_calls = []
+        request = HttpRequest()
+        response = HttpResponse()
+        app = DFConsumer()
+        domain, port = "example.com", 8000
+        ws_url = ws_settings.WEBSOCKET_URL
+        q_url = quote_plus("ws://%s:%s%s" % (domain, port, ws_url))
+        options = "; expires=Mon, 20 Dec 2021 18:51:51 GMT; Max-Age=86400; Path=/; SameSite=Lax"
+        request.META = {"SERVER_NAME": domain, "SERVER_PORT": str(port)}
+
+        def trigger_signal(*args, **kwargs):
+            signal_calls.append((args, kwargs))
+
+        with self.settings(
+            ALLOWED_HOSTS=[domain, "%s:%s" % (domain, port)], CSRF_COOKIE_DOMAIN=domain,
+        ):
+            with mock.patch(
+                "df_websockets.tasks._trigger_signal", new=trigger_signal,
+            ):
+
+                cls = WebsocketMiddleware(lambda _: HttpResponse())
+                cls.process_request(request)
+                test_topic = "topic"
+                set_websocket_topics(request, test_topic)
+                cls.process_response(request, response)
+                # noinspection PyUnresolvedReferences
+                cookie = "dfwskey=%s;dfwsurl=%s" % (request.window_key, q_url)
+                headers = [
+                    ("Origin", "http://%s:%s" % (domain, port)),
+                    ("Pragma", "no-cache"),
+                    ("Sec-WebSocket-Key", "aMBKe/rXeKzfFSxjljqmdw=="),
+                    ("Sec-WebSocket-Version", "13"),
+                    ("Upgrade", "websocket"),
+                    ("Sec-WebSocket-Extensions", "permessage-deflate"),
+                    ("User-Agent", "Mozilla/5.0 (KHTML, like Gecko)"),
+                    ("Cache-Control", "no-cache"),
+                    ("Connection", "Upgrade"),
+                    ("Cookie", cookie),
+                ]
+                headers = [(x.encode(), y.encode()) for (x, y) in headers]
+
+                # Test a normal connection
+                communicator = WebsocketCommunicator(app, ws_url, headers=headers)
+                communicator.scope["server"] = (domain, 8000)
+                communicator.scope["cookies"] = parse_cookie(cookie)
+                connected, _ = await communicator.connect()
+                self.assertTrue(connected)
+                self.assertEqual(3, len(app.topics))
+                self.assertTrue(valid_topic_name("-broadcast") in app.topics)
+                # noinspection PyUnresolvedReferences
+                self.assertEqual(app.window_info.window_key, request.window_key)
+
+                serialized_signal = json.dumps(
+                    {"signal": "test.test_server", "opts": {}}
+                )
+                # await communicator.send_to(text_data=serialized_signal)
+                # self.assertEqual(1, len(signal_calls))
+                # self.assertEqual(
+                #     (app.window_info, "test.test_server"), signal_calls[0][0]
+                # )
+                # self.assertEqual(
+                #     {
+                #         "to": [SERVER],
+                #         "kwargs": {},
+                #         "from_client": True,
+                #         "eta": None,
+                #         "expires": None,
+                #         "countdown": None,
+                #     },
+                #     signal_calls[0][1],
+                # )
+
+            await tasks._trigger_signal_async(
+                app.window_info, "test.test_ws", to=WINDOW, kwargs={"1": "2"}
+            )
+            ws_msg = json.loads(await communicator.receive_from())
+            self.assertTrue("signal_id" in ws_msg)
+            del ws_msg["signal_id"]
+            self.assertEqual(
+                {"signal": "test.test_ws", "opts": {"1": "2"}},
+                ws_msg,
+            )
+
+            await tasks._call_ws_signal(
+                "test.test_ws",
+                "42",
+                [_topic_serializer(app.window_info, test_topic)],
+                {"1": "3"},
+            )
+            ws_msg = await communicator.receive_from()
+            self.assertEqual(
+                {"signal": "test.test_ws", "opts": {"1": "3"}, "signal_id": "42"},
+                json.loads(ws_msg),
+            )
+            await communicator.disconnect()

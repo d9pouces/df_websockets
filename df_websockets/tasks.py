@@ -61,7 +61,12 @@ from df_websockets.decorators import (
     REGISTERED_SIGNALS,
     SignalConnection,
 )
-from df_websockets.constants import WORKER_CELERY, WORKER_CHANNEL, WORKER_PROCESS, WORKER_THREAD
+from df_websockets.constants import (
+    WORKER_CELERY,
+    WORKER_CHANNEL,
+    WORKER_PROCESS,
+    WORKER_THREAD,
+)
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
@@ -185,6 +190,28 @@ def _trigger_signal(
     eta=None,
     from_client=False,
 ):
+    return async_to_sync(_trigger_signal_async)(
+        window_info,
+        signal_name,
+        to=to,
+        kwargs=kwargs,
+        countdown=countdown,
+        expires=expires,
+        eta=eta,
+        from_client=from_client,
+    )
+
+
+async def _trigger_signal_async(
+    window_info,
+    signal_name,
+    to=None,
+    kwargs=None,
+    countdown=None,
+    expires=None,
+    eta=None,
+    from_client=False,
+):
     """actually calls a DF signal, dispatching them to their destination:
 
     * only calls Celery tasks if a delay is required (`coutdown` argument)
@@ -277,21 +304,18 @@ def _trigger_signal(
             call_task(worker_mode, queue, celery_args, celery_options)
     if serialized_client_topics and not celery_options:
         signal_id = str(uuid.uuid4())
-        _call_ws_signal(signal_name, signal_id, serialized_client_topics, kwargs)
+        await _call_ws_signal(signal_name, signal_id, serialized_client_topics, kwargs)
 
 
 def call_task(worker_mode, queue, signal_args, celery_options):
     if worker_mode == WORKER_CELERY:
-        logger.debug('Call Celery task to queue %s.', queue)
-        _server_signal_call.apply_async(
-            args=signal_args, queue=queue, **celery_options
-        )
+        logger.debug("Call Celery task to queue %s.", queue)
+        _server_signal_call.apply_async(args=signal_args, queue=queue, **celery_options)
     elif worker_mode == WORKER_CHANNEL:
-        logger.debug('Call Channels task to queue %s.', queue)
+        logger.debug("Call Channels task to queue %s.", queue)
         channel_layer = get_channel_layer(DEFAULT_CHANNEL_LAYER)
         async_to_sync(channel_layer.send)(
-            queue,
-            {"type": "process.signal", "args": signal_args},
+            queue, {"type": "process.signal", "args": signal_args},
         )
     elif worker_mode in {WORKER_THREAD, WORKER_PROCESS}:
         if queue not in _PROCESS_POOLS:
@@ -299,10 +323,10 @@ def call_task(worker_mode, queue, signal_args, celery_options):
                 queue, ws_settings.WEBSOCKET_POOL_SIZES.get(None, 5)
             )
             if ws_settings.WEBSOCKET_WORKERS == WORKER_THREAD:
-                logger.debug('Call thread task to queue %s.', queue)
+                logger.debug("Call thread task to queue %s.", queue)
                 pool = multiprocessing.pool.ThreadPool(pool_size)
             else:
-                logger.debug('Call multiprocess task to queue %s.', queue)
+                logger.debug("Call multiprocess task to queue %s.", queue)
                 pool = multiprocessing.pool.Pool(
                     pool_size, initializer=django.setup, initargs=()
                 )
@@ -310,7 +334,9 @@ def call_task(worker_mode, queue, signal_args, celery_options):
         pool = _PROCESS_POOLS[queue]  # type: multiprocessing.pool.Pool
         pool.apply_async(process_task, args=signal_args)
     else:
-        raise ImproperlyConfigured("Invalid WEBSOCKET_WORKERS settings: %s" % worker_mode)
+        raise ImproperlyConfigured(
+            "Invalid WEBSOCKET_WORKERS settings: %s" % worker_mode
+        )
 
 
 def process_task(
@@ -325,7 +351,11 @@ def process_task(
 ):
     logger.info(
         'Signal "%s" called on queue "%s" to topics %s (from client?: %s, to server?: %s)',
-        signal_name, queue, serialized_client_topics, from_client, to_server,
+        signal_name,
+        queue,
+        serialized_client_topics,
+        from_client,
+        to_server,
     )
     try:
         if kwargs is None:
@@ -354,7 +384,9 @@ def process_task(
         logger.exception(e)
 
 
-def _call_ws_signal(signal_name: str, signal_id, serialized_topics: List[str], kwargs):
+async def _call_ws_signal(
+    signal_name: str, signal_id, serialized_topics: List[str], kwargs
+):
     if isinstance(serialized_topics, str):
         serialized_topics = [serialized_topics]
     serialized_message = json.dumps(
@@ -366,9 +398,8 @@ def _call_ws_signal(signal_name: str, signal_id, serialized_topics: List[str], k
         logger.debug("send message to topic %r", serialized_topic)
         topic_valid = valid_topic_name(serialized_topic)
         # noinspection PyTypeChecker
-        async_to_sync(channel_layer.group_send)(
-            topic_valid,
-            {"type": "ws_message", "message": serialized_message},
+        await channel_layer.group_send(
+            topic_valid, {"type": "ws_message", "message": serialized_message},
         )
 
 

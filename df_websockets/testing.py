@@ -86,7 +86,7 @@ class SignalQueue:
         setattr(tasks_module, "call_task", call_task)
 
         # noinspection PyUnusedLocal
-        def ws_signal_call(signal_name, signal_id, serialized_topics, kwargs):
+        async def ws_signal_call(signal_name, signal_id, serialized_topics, kwargs):
             json.dumps(kwargs, cls=encoder)  # to check if args are JSON-serializable
             if isinstance(serialized_topics, str):
                 serialized_topics = [serialized_topics]

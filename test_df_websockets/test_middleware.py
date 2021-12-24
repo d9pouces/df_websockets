@@ -27,13 +27,9 @@ from df_websockets.tasks import set_websocket_topics
 
 class TestWebsocketMiddleware(TestCase):
     def test_websocketmiddleware_empty(self):
-        # noinspection PyUnusedLocal
-        def get_response(req):
-            return HttpResponse()
-
         request = HttpRequest()
         response = HttpResponse()
-        cls = WebsocketMiddleware(get_response)
+        cls = WebsocketMiddleware(lambda _: HttpResponse())
         req = cls.process_request(request)
         self.assertIsNone(req)
         # noinspection PyUnresolvedReferences
@@ -43,9 +39,6 @@ class TestWebsocketMiddleware(TestCase):
         response_ = cls.process_response(request, response)
 
     def test_websocketmiddleware(self):
-        # noinspection PyUnusedLocal
-        def get_response(req_):
-            return HttpResponse()
 
         request = HttpRequest()
         with self.settings(ALLOWED_HOSTS=['example.com', 'example.com:8000']):
@@ -54,7 +47,7 @@ class TestWebsocketMiddleware(TestCase):
                 "SERVER_PORT": "8000"
             }
             response = HttpResponse()
-            cls = WebsocketMiddleware(get_response)
+            cls = WebsocketMiddleware(lambda _: HttpResponse())
             req = cls.process_request(request)
             self.assertIsNone(req)
             # noinspection PyUnresolvedReferences

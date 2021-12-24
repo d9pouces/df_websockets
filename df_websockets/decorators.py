@@ -340,9 +340,9 @@ class SignalConnection(Connection):
         REGISTERED_SIGNALS.setdefault(self.path, []).append(self)
 
     def call(self, window_info, **kwargs):
-        from df_websockets.tasks import SERVER, trigger_signal
+        from df_websockets import tasks
 
-        trigger_signal(window_info, self.path, to=SERVER, kwargs=kwargs)
+        tasks.trigger_signal(window_info, self.path, to=tasks.SERVER, kwargs=kwargs)
 
 
 def signal(
