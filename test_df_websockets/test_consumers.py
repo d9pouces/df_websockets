@@ -12,7 +12,7 @@ from django.test import TestCase, override_settings
 from df_websockets import tasks, ws_settings
 from df_websockets.consumers import DFConsumer, get_websocket_topics
 from df_websockets.middleware import WebsocketMiddleware
-from df_websockets.tasks import WINDOW, _topic_serializer, set_websocket_topics
+from df_websockets.tasks import SERVER, WINDOW, _topic_serializer, set_websocket_topics
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
@@ -62,7 +62,6 @@ class TestDFConsumer(TestCase):
                 "df_websockets.tasks._trigger_signal",
                 new=trigger_signal,
             ):
-
                 cls = WebsocketMiddleware(lambda _: HttpResponse())
                 cls.process_request(request)
                 test_topic = "topic"
@@ -89,52 +88,50 @@ class TestDFConsumer(TestCase):
                 communicator.scope["server"] = (domain, 8000)
                 communicator.scope["cookies"] = parse_cookie(cookie)
                 connected, _ = await communicator.connect()
+
                 self.assertTrue(connected)
                 self.assertEqual(3, len(app.topics))
                 self.assertTrue(valid_topic_name("-broadcast") in app.topics)
                 # noinspection PyUnresolvedReferences
                 self.assertEqual(app.window_info.window_key, request.window_key)
 
-                serialized_signal = json.dumps(
-                    {"signal": "test.test_server", "opts": {}}
+                await tasks._trigger_signal_async(
+                    app.window_info, "test.test_ws", to=WINDOW, kwargs={"1": "2"}
                 )
-                await communicator.send_to(text_data=serialized_signal)
-                # self.assertEqual(1, len(signal_calls))
-                # self.assertEqual(
-                #     (app.window_info, "test.test_server"), signal_calls[0][0]
-                # )
-                # self.assertEqual(
-                #     {
-                #         "to": [SERVER],
-                #         "kwargs": {},
-                #         "from_client": True,
-                #         "eta": None,
-                #         "expires": None,
-                #         "countdown": None,
-                #     },
-                #     signal_calls[0][1],
-                # )
+                ws_msg = json.loads(await communicator.receive_from())
+                self.assertTrue("signal_id" in ws_msg)
+                del ws_msg["signal_id"]
+                self.assertEqual(
+                    {"signal": "test.test_ws", "opts": {"1": "2"}},
+                    ws_msg,
+                )
 
-            await tasks._trigger_signal_async(
-                app.window_info, "test.test_ws", to=WINDOW, kwargs={"1": "2"}
-            )
-            ws_msg = json.loads(await communicator.receive_from())
-            self.assertTrue("signal_id" in ws_msg)
-            del ws_msg["signal_id"]
-            self.assertEqual(
-                {"signal": "test.test_ws", "opts": {"1": "2"}},
-                ws_msg,
-            )
+                app.receive(json.dumps({"signal": "test.test_server", "opts": {}}))
+                self.assertEqual(1, len(signal_calls))
+                self.assertEqual(
+                    (app.window_info, "test.test_server"), signal_calls[0][0]
+                )
+                self.assertEqual(
+                    {
+                        "to": [SERVER],
+                        "kwargs": {},
+                        "from_client": True,
+                        "eta": None,
+                        "expires": None,
+                        "countdown": None,
+                    },
+                    signal_calls[0][1],
+                )
 
-            await tasks._call_ws_signal(
-                "test.test_ws",
-                "42",
-                [_topic_serializer(app.window_info, test_topic)],
-                {"1": "3"},
-            )
-            ws_msg = await communicator.receive_from()
-            self.assertEqual(
-                {"signal": "test.test_ws", "opts": {"1": "3"}, "signal_id": "42"},
-                json.loads(ws_msg),
-            )
-            await communicator.disconnect()
+                await tasks._call_ws_signal(
+                    "test.test_ws",
+                    "42",
+                    [_topic_serializer(app.window_info, test_topic)],
+                    {"1": "3"},
+                )
+                ws_msg = await communicator.receive_from()
+                self.assertEqual(
+                    {"signal": "test.test_ws", "opts": {"1": "3"}, "signal_id": "42"},
+                    json.loads(ws_msg),
+                )
+                await communicator.disconnect()

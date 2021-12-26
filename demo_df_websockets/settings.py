@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
 from pathlib import Path
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 from typing import List
 
 from df_websockets.constants import WORKER_CHANNEL, WORKER_THREAD
@@ -133,7 +132,7 @@ LOGGING = {
         "django.db.backends": {"handlers": [], "level": "INFO", "propagate": True},
         "django.request": {"handlers": [], "level": "DEBUG", "propagate": True},
         "django.security": {"handlers": [], "level": "INFO", "propagate": True},
-        "df_websockets.signals": {"handlers": [], "level": "INFO", "propagate": True},
+        "df_websockets.signals": {"handlers": [], "level": "DEBUG", "propagate": True},
         "gunicorn.error": {"handlers": [], "level": "DEBUG", "propagate": True},
         "pip.vcs": {"handlers": [], "level": "INFO", "propagate": True},
         "py.warnings": {"handlers": [], "level": "INFO", "propagate": True},
