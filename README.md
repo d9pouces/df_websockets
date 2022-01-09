@@ -178,6 +178,27 @@ These data are stored in the `WindowInfo` object, automatically built from the H
 The `trigger` function accepts `WindowInfo` or `HTTPRequest` objects as first argument.
 
 
+settings
+--------
+
+There are a few settings:
+
+- `WEBSOCKET_WORKERS`: one of "celery" (use Celery tasks), "channels" (use Channels workers), "multithread" (process signals in threads), "multiprocess" (process signals in new processes).
+  The first two choices require at least one valid worker. 
+- `CELERY_DEFAULT_QUEUE` the default queue for signals (`"celery"` by default)
+
+Other settings are:
+- `WEBSOCKET_REDIS_EXPIRE`: the validity of the association between a websocket connection and the associated topics
+- `WEBSOCKET_REDIS_PREFIX`: prefix of keys used to cache data
+- `WEBSOCKET_SIGNAL_ENCODER`: the JSON encoder to encode signal arguments 
+- `WEBSOCKET_SIGNAL_DECODER`: the JSON decoder to decode signal arguments
+- `WEBSOCKET_TOPIC_SERIALIZER`: the function used to transform Python topics into valid topic names  
+- `WEBSOCKET_POOL_SIZES`: a dict associating a queue name to a number of threads (or processes)
+- `WINDOW_INFO_MIDDLEWARES`: a list of middlewares for transforming a HttpRequest to a WindowInfo 
+- `WEBSOCKET_URL`: URL prefix (`/ws/` by default)
+- `ASGI_APPLICATION`: the ASGI application 
+
+
 HTML forms
 ----------
 
@@ -313,7 +334,11 @@ window.DFSignals.call('html.content', {selector: "#obj", content: "<span>hello</
 
 Please read the content of `npm/df_websockets/base.js` for the whole list of available signals. 
 You can also create some shortcuts for the most common signals.
+Another way is to run the demo:
 
+```bash
+python demo_manage.py runserver
+```
 
 Checklist 
 ---------
