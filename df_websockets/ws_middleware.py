@@ -24,7 +24,7 @@ from django.contrib.messages import DEFAULT_LEVELS
 from django.db.models import Q
 from django.http import HttpRequest
 from django.utils import translation
-from django.utils.translation import get_language_from_request
+from django.utils.translation import activate, get_language_from_request
 
 logger = logging.getLogger("df_websockets.signals")
 
@@ -60,6 +60,10 @@ class WindowInfoMiddleware:
         used in :meth:`df_websockets.window_info:render_to_string`
         """
         return {}
+
+    def before_process(self, window_info):
+        """Pre-process each WindowInfo before dispatching the connections."""
+        pass
 
     def install_methods(self, window_info_cls):
         """add new methods to the WindowInfo class.
@@ -287,3 +291,7 @@ class Djangoi18nMiddleware(WindowInfoMiddleware):
             "LANGUAGE_CODE": window_info.language_code,
             "LANGUAGE_BIDI": translation.get_language_bidi(),
         }
+
+    def before_process(self, window_info):
+        if window_info.language_code:
+            activate(window_info.language_code)
