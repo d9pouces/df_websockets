@@ -13,15 +13,39 @@
 #  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
 #                                                                              #
 # ##############################################################################
+import warnings
+
 from django.conf import settings
 
 from df_websockets import constants
+from df_websockets.constants import RemovedInDfWebsockets2Warning
 
 CELERY_APP = getattr(settings, "CELERY_APP", "df_websockets")
-CELERY_DEFAULT_QUEUE = getattr(settings, "CELERY_DEFAULT_QUEUE", "celery")
 
-WEBSOCKET_REDIS_EXPIRE = getattr(settings, "WEBSOCKET_REDIS_EXPIRE", 36000)
-WEBSOCKET_REDIS_PREFIX = getattr(settings, "WEBSOCKET_REDIS_PREFIX", "df_ws")
+
+def compatibility_setting(new_name, old_name, default):
+    if hasattr(settings, new_name):
+        return settings.WEBSOCKET_DEFAULT_QUEUE
+    elif hasattr(settings, old_name):
+        warnings.warn(
+            f"{old_name} settings is replaced by {new_name}.",
+            category=RemovedInDfWebsockets2Warning,
+            stacklevel=2,
+        )
+        return settings.CELERY_DEFAULT_QUEUE
+    else:
+        return default
+
+
+WEBSOCKET_DEFAULT_QUEUE = compatibility_setting(
+    "WEBSOCKET_DEFAULT_QUEUE", "CELERY_DEFAULT_QUEUE", "celery"
+)
+WEBSOCKET_CACHE_EXPIRE = compatibility_setting(
+    "WEBSOCKET_CACHE_EXPIRE", "WEBSOCKET_REDIS_EXPIRE", 36000
+)
+WEBSOCKET_CACHE_PREFIX = compatibility_setting(
+    "WEBSOCKET_CACHE_PREFIX", "WEBSOCKET_REDIS_PREFIX", "df_ws"
+)
 WEBSOCKET_SIGNAL_DECODER = getattr(
     settings, "WEBSOCKET_SIGNAL_DECODER", "json.JSONDecoder"
 )

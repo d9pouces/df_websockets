@@ -45,7 +45,7 @@ def get_websocket_topics(request: Union[HttpRequest, WindowInfo]):
         return []
     # noinspection PyUnresolvedReferences
     cache_key = "%s%s" % (
-        ws_settings.WEBSOCKET_REDIS_PREFIX,
+        ws_settings.WEBSOCKET_CACHE_PREFIX,
         request.window_key,
     )
     topic_string = cache.cache.get(cache_key, "[]")

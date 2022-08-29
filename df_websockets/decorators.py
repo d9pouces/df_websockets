@@ -94,7 +94,7 @@ class DynamicQueueName:
           * the monitoring view will not display all required queues,
           * the systemd service files (provided by the `packaging` command) will not create all required workers.
         """
-        return {ws_settings.CELERY_DEFAULT_QUEUE}
+        return {ws_settings.WEBSOCKET_DEFAULT_QUEUE}
 
 
 class RandomDynamicQueueName(DynamicQueueName):
@@ -239,7 +239,7 @@ class Connection:
         if not re.match(r"^([_a-zA-Z]\w*)(\.[_a-zA-Z]\w*)*$", self.path):
             raise ValueError("Invalid identifier: %s" % self.path)
         self.is_allowed_to = is_allowed_to
-        self.queue = queue or ws_settings.CELERY_DEFAULT_QUEUE
+        self.queue = queue or ws_settings.WEBSOCKET_DEFAULT_QUEUE
         self.accept_kwargs = False
         self.argument_types = {}
         self.required_arguments_names = set()
@@ -338,7 +338,7 @@ class Connection:
         """Provide the Celery queue name as a string."""
         if callable(self.queue):
             return str(self.queue(self, window_info, original_kwargs))
-        return str(self.queue) or ws_settings.CELERY_DEFAULT_QUEUE
+        return str(self.queue) or ws_settings.WEBSOCKET_DEFAULT_QUEUE
 
 
 class SignalConnection(Connection):

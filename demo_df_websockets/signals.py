@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 
 from df_websockets.decorators import everyone, signal
 from df_websockets.tasks import BROADCAST, trigger
@@ -6,12 +7,13 @@ from df_websockets.tasks import BROADCAST, trigger
 
 @signal(path="demo.html.after", is_allowed_to=everyone)
 def demo_html_after(window_info):
+    new_text = str(_("Lookup"))
     trigger(
         window_info,
         "html.after",
         to=BROADCAST,
         selector=".after",
-        content='<li class="list-group-item"><i>New text</i></li>',
+        content=f'<li class="list-group-item"><i>{new_text}</i></li>',
     )
 
 

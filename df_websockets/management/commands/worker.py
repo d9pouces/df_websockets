@@ -61,7 +61,7 @@ class Command(BaseCommand):
         if queues_str:
             queues = [x.strip() for x in options["queues"].split(",") if x.strip()]
         else:
-            queues = [ws_settings.CELERY_DEFAULT_QUEUE]
+            queues = [ws_settings.WEBSOCKET_DEFAULT_QUEUE]
         # Get the channel layer they asked for (or see if one isn't configured)
         channel_layer = get_channel_layer()
         if channel_layer is None:

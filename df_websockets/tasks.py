@@ -115,8 +115,8 @@ def set_websocket_topics(request, *topics):
     topic_strings.add(_topic_serializer(request, BROADCAST))
     topic_string = json.dumps(list(topic_strings))
     # noinspection PyUnresolvedReferences
-    cache_key = "%s%s" % (ws_settings.WEBSOCKET_REDIS_PREFIX, request.window_key)
-    cache.cache.set(cache_key, topic_string, ws_settings.WEBSOCKET_REDIS_EXPIRE)
+    cache_key = "%s%s" % (ws_settings.WEBSOCKET_CACHE_PREFIX, request.window_key)
+    cache.cache.set(cache_key, topic_string, ws_settings.WEBSOCKET_CACHE_EXPIRE)
     logger.debug("websocket %s is now bound to topics %s", cache_key, topic_string)
 
 
@@ -265,7 +265,7 @@ async def _trigger_signal_async(
     if celery_options and serialized_client_topics:
         # we do not send to WS clients now (countdown or eta)
         background_client_topics = serialized_client_topics
-        queues.add(ws_settings.CELERY_DEFAULT_QUEUE)
+        queues.add(ws_settings.WEBSOCKET_DEFAULT_QUEUE)
         to_server = True
     else:
         background_client_topics = []
@@ -284,7 +284,7 @@ async def _trigger_signal_async(
         for queue in queues:
             topics = (
                 background_client_topics
-                if queue == ws_settings.CELERY_DEFAULT_QUEUE
+                if queue == ws_settings.WEBSOCKET_DEFAULT_QUEUE
                 else []
             )
             celery_args = [

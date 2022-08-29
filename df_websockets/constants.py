@@ -19,3 +19,7 @@ WORKER_PROCESS = "process"
 WORKER_THREAD = "thread"
 WEBSOCKET_URL_COOKIE_NAME = "dfwsurl"
 WEBSOCKET_KEY_COOKIE_NAME = "dfwskey"
+
+
+class RemovedInDfWebsockets2Warning(PendingDeprecationWarning):
+    pass

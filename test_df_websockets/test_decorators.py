@@ -22,7 +22,7 @@ class TestDecorator(TestCase):
         self.assertEqual(signal_obj.function, test_signal)
         self.assertEqual(signal_obj.path, signal_name)
         self.assertEqual(signal_obj.is_allowed_to, server_side)
-        self.assertEqual(signal_obj.queue, ws_settings.CELERY_DEFAULT_QUEUE)
+        self.assertEqual(signal_obj.queue, ws_settings.WEBSOCKET_DEFAULT_QUEUE)
         self.assertEqual({"arg_1": str, "arg_2": int}, signal_obj.argument_types)
         self.assertEqual({"arg_1"}, signal_obj.required_arguments_names)
         self.assertEqual({"arg_2"}, signal_obj.optional_arguments_names)
