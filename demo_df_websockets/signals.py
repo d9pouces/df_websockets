@@ -207,3 +207,10 @@ def demo_html_forms_set(window_info):
             {"name": "multi", "value": ["lemon", "eggplant"]},
         ],
     )
+
+
+# noinspection PyUnusedLocal
+@signal(path="demo.exceptions.server", is_allowed_to=everyone)
+def demo_exceptions_server(window_info):
+    # noinspection PyStatementEffect
+    1 / 0

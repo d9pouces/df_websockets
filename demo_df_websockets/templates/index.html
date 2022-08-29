@@ -584,6 +584,31 @@
         </div>
     </div>
 
+
+        <div class="accordion-item">
+        <h2 class="accordion-header" id="heading_exceptions_server">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapse_exceptions_server" aria-expanded="false"
+                    aria-controls="collapse_exceptions_server">
+                "demo.exceptions.server"
+            </button>
+        </h2>
+        <div id="collapse_exceptions_server" class="accordion-collapse collapse"
+             aria-labelledby="heading_exceptions_server"
+             data-bs-parent="#mainAccordion">
+            <div class="accordion-body">
+                <ul class="list-group exceptions_server">
+                    <li class="list-group-item">
+                        <button class="btn btn-success" {% js_call 'demo.exceptions.server' on='click' %}>
+                            Click here to trigger an error on the server.
+                        </button>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+
 </div>
 
 
