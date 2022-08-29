@@ -1,0 +1,42 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+    -   id: check-added-large-files
+    -   id: check-ast
+    -   id: check-case-conflict
+    -   id: check-executables-have-shebangs
+    -   id: check-json
+    -   id: check-merge-conflict
+    -   id: check-toml
+    -   id: check-yaml
+-   repo: https://github.com/psf/black
+    rev: 20.8b1
+    hooks:
+    -   id: black
+-   repo: https://github.com/PyCQA/flake8
+    rev: 3.9.0
+    hooks:
+    -   id: flake8
+-   repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.0.0
+    hooks:
+    -   id: pydocstyle
+-   repo: https://github.com/PyCQA/isort
+    rev: 5.8.0
+    hooks:
+    -   id: isort
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.8.0
+    hooks:
+    -   id: rst-inline-touching-normal
+    -   id: rst-directive-colons
+    -   id: rst-backticks
+    -   id: python-no-log-warn
+    -   id: python-no-eval
+    -   id: python-check-mock-methods
+    -   id: python-check-blanket-noqa
+default_language_version:
+    python: python3.8

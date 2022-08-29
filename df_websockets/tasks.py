@@ -52,7 +52,7 @@ from df_websockets.decorators import (
 )
 from df_websockets.load import load_celery
 from df_websockets.utils import valid_topic_name
-from df_websockets.window_info import WindowInfo
+from df_websockets.window_info import WindowInfo, middlewares
 
 logger = logging.getLogger("df_websockets.signals")
 
@@ -373,6 +373,9 @@ def _server_signal_call(
         window_info.celery_request = self.request
         if not to_server or signal_name not in REGISTERED_SIGNALS:
             return
+        for mdw in middlewares:
+            mdw.before_process(window_info)
+
         for connection in REGISTERED_SIGNALS[signal_name]:
             assert isinstance(connection, SignalConnection)
             if connection.get_queue(window_info, kwargs) != queue or (
@@ -404,6 +407,8 @@ def _server_function_call(
         assert isinstance(connection, FunctionConnection)
         if not connection.is_allowed_to(connection, window_info, kwargs):
             raise ValueError("Unauthorized function call %s" % connection.path)
+        for mdw in middlewares:
+            mdw.before_process(window_info)
         kwargs = connection.check(kwargs)
         if kwargs is not None:
             # noinspection PyBroadException
