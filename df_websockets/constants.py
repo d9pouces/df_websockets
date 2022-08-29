@@ -13,12 +13,9 @@
 #  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
 #                                                                              #
 # ##############################################################################
-
-
-def load_celery():
-    """Import Celery application unless Celery is disabled.
-    Allow to automatically load tasks
-    """
-    from df_websockets.celery import app
-
-    return app
+WORKER_CELERY = "celery"
+WORKER_CHANNEL = "channels"
+WORKER_PROCESS = "process"
+WORKER_THREAD = "thread"
+WEBSOCKET_URL_COOKIE_NAME = "dfwsurl"
+WEBSOCKET_KEY_COOKIE_NAME = "dfwskey"

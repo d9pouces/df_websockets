@@ -18,18 +18,19 @@ import logging
 from functools import lru_cache
 from typing import Optional, Union
 
+from asgiref.compatibility import guarantee_single_callable
 from asgiref.sync import async_to_sync
 from channels.consumer import SyncConsumer
 from channels.generic.websocket import WebsocketConsumer
-from django import http
+from channels.routing import ChannelNameRouter
+from django.core import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.core.handlers.base import BaseHandler
 from django.http import HttpRequest, HttpResponse, QueryDict
 from django.utils.module_loading import import_string
 
-from df_websockets import ws_settings, tasks
-from df_websockets.middleware import WebsocketMiddleware
-from df_websockets.tasks import SERVER, _trigger_signal
+from df_websockets import tasks, ws_settings
+from df_websockets.constants import WEBSOCKET_KEY_COOKIE_NAME
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
@@ -40,14 +41,16 @@ signal_decoder = import_string(ws_settings.WEBSOCKET_SIGNAL_DECODER)
 
 
 def get_websocket_topics(request: Union[HttpRequest, WindowInfo]):
+    if not hasattr(request, "window_key"):
+        return []
     # noinspection PyUnresolvedReferences
-    redis_key = "%s%s" % (
+    cache_key = "%s%s" % (
         ws_settings.WEBSOCKET_REDIS_PREFIX,
-        getattr(request, "window_key", ""),
+        request.window_key,
     )
-    connection = tasks.get_websocket_redis_connection()
-    topics = connection.lrange(redis_key, 0, -1)
-    return [valid_topic_name(x) for x in topics]
+    topic_string = cache.cache.get(cache_key, "[]")
+    logger.debug("websocket %s is bound to topics %s", cache_key, topic_string)
+    return [valid_topic_name(x) for x in json.loads(topic_string)]
 
 
 class WebsocketHandler(BaseHandler):
@@ -73,9 +76,7 @@ class DFConsumer(WebsocketConsumer):
             request = self.build_http_request()
             handler = get_handler()
             handler.get_response(request)
-            request.window_key = request.GET.get(
-                WebsocketMiddleware.ws_windowkey_get_parameter, ""
-            )
+            request.window_key = request.COOKIES.get(WEBSOCKET_KEY_COOKIE_NAME, "")
             self.topics = get_websocket_topics(request)
             self.window_info = WindowInfo.from_request(request)
             if self.channel_layer:
@@ -100,19 +101,16 @@ class DFConsumer(WebsocketConsumer):
         request.method = "GET"
         request.path_info = self.scope["path"]
         request.GET = QueryDict(query_string=query_string)
-        for name, value in self.scope.get("headers", []):
-            name = name.decode("latin1")
-            if name == "content-length":
-                corrected_name = "CONTENT_LENGTH"
-            elif name == "content-type":
-                corrected_name = "CONTENT_TYPE"
-            else:
-                corrected_name = "HTTP_%s" % name.upper().replace("-", "_")
+        for header_name_bytes, header_value_bytes in self.scope.get("headers", []):
+            header_name = header_name_bytes.decode("latin1").upper().replace("-", "_")
+            if header_name not in ("CONTENT_TYPE", "CONTENT_LENGTH"):
+                header_name = "HTTP_%s" % header_name
             # HTTPbis say only ASCII chars are allowed in headers, but we latin1 just in case
-            value = value.decode("latin1")
-            if corrected_name in request.META:
-                value = request.META[corrected_name] + "," + value
-            request.META[corrected_name] = value
+            header_value = header_value_bytes.decode("latin1")
+            if header_name in request.META:
+                request.META[header_name] += "," + header_value
+            else:
+                request.META[header_name] = header_value
         if self.scope.get("client", None):
             request.META["REMOTE_ADDR"] = self.scope["client"][0]
             request.META["REMOTE_HOST"] = request.META["REMOTE_ADDR"]
@@ -124,7 +122,7 @@ class DFConsumer(WebsocketConsumer):
             request.META["SERVER_NAME"] = "unknown"
             request.META["SERVER_PORT"] = "0"
         request.META["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
-        request.COOKIES = http.parse_cookie(request.META.get("HTTP_COOKIE", ""))
+        request.COOKIES = self.scope.get("cookies", {})
         return request
 
     def disconnect(self, close_code):
@@ -140,17 +138,18 @@ class DFConsumer(WebsocketConsumer):
     def receive(self, text_data=None, bytes_data=None):
         try:
             msg = json.loads(text_data)
-            logger.debug('WS message received "%s"' % text_data)
+            logger.debug('WS message received "%s"', text_data)
             if "signal" in msg:
                 kwargs = msg["opts"]
                 signal_name = msg["signal"]
                 eta = int(msg.get("eta", 0)) or None
                 expires = int(msg.get("expires", 0)) or None
                 countdown = int(msg.get("countdown", 0)) or None
-                _trigger_signal(
+                # noinspection PyProtectedMember
+                tasks._trigger_signal(
                     self.window_info,
                     signal_name,
-                    to=[SERVER],
+                    to=[tasks.SERVER],
                     kwargs=kwargs,
                     from_client=True,
                     eta=eta,
@@ -162,5 +161,42 @@ class DFConsumer(WebsocketConsumer):
 
 
 class BackgroundConsumer(SyncConsumer):
-    def process_df_signal(self):
-        pass
+    # noinspection PyMethodMayBeStatic
+    def process_signal(
+        self,
+        data,
+    ):
+        (
+            signal_name,
+            window_info_dict,
+            kwargs,
+            from_client,
+            serialized_client_topics,
+            to_server,
+            queue,
+        ) = data["args"]
+        tasks.process_task(
+            signal_name,
+            window_info_dict,
+            kwargs=kwargs,
+            from_client=from_client,
+            serialized_client_topics=serialized_client_topics,
+            to_server=to_server,
+            queue=queue,
+            celery_request=None,
+        )
+
+
+class DFChannelNameRouter(ChannelNameRouter):
+    def __init__(self):
+        super().__init__({})
+        self.application = BackgroundConsumer.as_asgi()
+
+    async def __call__(self, scope, receive, send):
+        if "channel" not in scope:
+            raise ValueError(
+                "ChannelNameRouter got a scope without a 'channel' key. "
+                + "Did you make sure it's only being used for 'channel' type messages?"
+            )
+        application = guarantee_single_callable(self.application)
+        return await application(scope, receive, send)

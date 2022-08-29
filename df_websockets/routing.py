@@ -13,7 +13,7 @@
 #  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
 #                                                                              #
 # ##############################################################################
-
+"""Define the web ASGI application."""
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 
@@ -24,7 +24,7 @@ except ImportError:  # django < 3.0
 from django.urls import path
 
 from df_websockets import ws_settings
-from df_websockets.consumers import DFConsumer
+from df_websockets.consumers import DFChannelNameRouter, DFConsumer
 
 websocket_urlpatterns = [
     path(ws_settings.WEBSOCKET_URL[1:], DFConsumer.as_asgi()),
@@ -32,6 +32,8 @@ websocket_urlpatterns = [
 
 mapping = {
     "websocket": AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
+    "channel": DFChannelNameRouter(),
+    "celery": DFChannelNameRouter(),
 }
 if ASGIHandler:
     mapping["http"] = ASGIHandler()

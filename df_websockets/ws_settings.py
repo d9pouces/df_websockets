@@ -15,15 +15,13 @@
 # ##############################################################################
 from django.conf import settings
 
+from df_websockets import constants
+
 CELERY_APP = getattr(settings, "CELERY_APP", "df_websockets")
 CELERY_DEFAULT_QUEUE = getattr(settings, "CELERY_DEFAULT_QUEUE", "celery")
-WEBSOCKET_REDIS_CONNECTION = getattr(
-    settings,
-    "WEBSOCKET_REDIS_CONNECTION",
-    {"host": "localhost", "port": 6379, "db": 3, "password": None},
-)
+
 WEBSOCKET_REDIS_EXPIRE = getattr(settings, "WEBSOCKET_REDIS_EXPIRE", 36000)
-WEBSOCKET_REDIS_PREFIX = getattr(settings, "WEBSOCKET_REDIS_PREFIX", "ws")
+WEBSOCKET_REDIS_PREFIX = getattr(settings, "WEBSOCKET_REDIS_PREFIX", "df_ws")
 WEBSOCKET_SIGNAL_DECODER = getattr(
     settings, "WEBSOCKET_SIGNAL_DECODER", "json.JSONDecoder"
 )
@@ -35,6 +33,9 @@ WEBSOCKET_SIGNAL_ENCODER = getattr(
 WEBSOCKET_TOPIC_SERIALIZER = getattr(
     settings, "WEBSOCKET_TOPIC_SERIALIZER", "df_websockets.topics.serialize_topic"
 )
+WEBSOCKET_WORKERS = getattr(settings, "WEBSOCKET_WORKERS", constants.WORKER_CELERY)
+# "celery", "channels", "multithread", "multiprocess"
+WEBSOCKET_POOL_SIZES = getattr(settings, "WEBSOCKET_POOL_SIZES", {None: 10})
 WINDOW_INFO_MIDDLEWARES = getattr(
     settings,
     "WINDOW_INFO_MIDDLEWARES",
