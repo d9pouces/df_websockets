@@ -37,6 +37,7 @@ from typing import Dict, List
 
 import django
 from asgiref.sync import async_to_sync
+from django.core.cache import caches
 
 try:
     from celery import shared_task as celery_shared_task
@@ -46,7 +47,6 @@ except ImportError:
 from channels import DEFAULT_CHANNEL_LAYER
 from channels.layers import get_channel_layer
 from django.apps import apps
-from django.core import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.module_loading import import_string
 
@@ -116,7 +116,8 @@ def set_websocket_topics(request, *topics):
     topic_string = json.dumps(list(topic_strings))
     # noinspection PyUnresolvedReferences
     cache_key = "%s%s" % (ws_settings.WEBSOCKET_CACHE_PREFIX, request.window_key)
-    cache.cache.set(cache_key, topic_string, ws_settings.WEBSOCKET_CACHE_EXPIRE)
+    cache = caches[ws_settings.WEBSOCKET_CACHE_BACKEND]
+    cache.set(cache_key, topic_string, ws_settings.WEBSOCKET_CACHE_EXPIRE)
     logger.debug("websocket %s is now bound to topics %s", cache_key, topic_string)
 
 

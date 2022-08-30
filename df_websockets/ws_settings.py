@@ -46,6 +46,7 @@ WEBSOCKET_CACHE_EXPIRE = compatibility_setting(
 WEBSOCKET_CACHE_PREFIX = compatibility_setting(
     "WEBSOCKET_CACHE_PREFIX", "WEBSOCKET_REDIS_PREFIX", "df_ws"
 )
+WEBSOCKET_CACHE_BACKEND = getattr(settings, "WEBSOCKET_CACHE_BACKEND", "default")
 WEBSOCKET_SIGNAL_DECODER = getattr(
     settings, "WEBSOCKET_SIGNAL_DECODER", "json.JSONDecoder"
 )

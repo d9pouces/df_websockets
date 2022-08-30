@@ -23,7 +23,7 @@ from asgiref.sync import async_to_sync
 from channels.consumer import SyncConsumer
 from channels.generic.websocket import WebsocketConsumer
 from channels.routing import ChannelNameRouter
-from django.core import cache
+from django.core.cache import caches
 from django.core.exceptions import ImproperlyConfigured
 from django.core.handlers.base import BaseHandler
 from django.http import HttpRequest, HttpResponse, QueryDict
@@ -48,7 +48,8 @@ def get_websocket_topics(request: Union[HttpRequest, WindowInfo]):
         ws_settings.WEBSOCKET_CACHE_PREFIX,
         request.window_key,
     )
-    topic_string = cache.cache.get(cache_key, "[]")
+    cache = caches[ws_settings.WEBSOCKET_CACHE_BACKEND]
+    topic_string = cache.get(cache_key, "[]")
     logger.debug("websocket %s is bound to topics %s", cache_key, topic_string)
     return [valid_topic_name(x) for x in json.loads(topic_string)]
 

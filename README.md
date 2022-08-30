@@ -185,11 +185,12 @@ There are a few settings:
 
 - `WEBSOCKET_WORKERS`: one of "celery" (use Celery tasks), "channels" (use Channels workers), "multithread" (process signals in threads), "multiprocess" (process signals in new processes).
   The first two choices require at least one valid worker. 
-- `CELERY_DEFAULT_QUEUE` the default queue for signals (`"celery"` by default)
+- `WEBSOCKET_DEFAULT_QUEUE` the default queue for signals (`"celery"` by default)
 
 Other settings are:
-- `WEBSOCKET_REDIS_EXPIRE`: the validity of the association between a websocket connection and the associated topics
-- `WEBSOCKET_REDIS_PREFIX`: prefix of keys used to cache data
+- `WEBSOCKET_CACHE_EXPIRE`: the validity of the association between a websocket connection and the associated topics
+- `WEBSOCKET_CACHE_PREFIX`: prefix of keys used to cache data
+- `WEBSOCKET_CACHE_BACKEND`: the cache backend (`default` by default) — you cannot use LocMemCache with Celery or Channels workers, nor DummyCache with any kind of workers 
 - `WEBSOCKET_SIGNAL_ENCODER`: the JSON encoder to encode signal arguments 
 - `WEBSOCKET_SIGNAL_DECODER`: the JSON decoder to decode signal arguments
 - `WEBSOCKET_TOPIC_SERIALIZER`: the function used to transform Python topics into valid topic names  
