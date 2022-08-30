@@ -16,8 +16,8 @@ Signals that are triggered by the server can be processed as background tasks on
 Background processes can use [celery](https://docs.celeryproject.org/en/stable/), [channels](https://pypi.org/project/channels/) workers, or simply different processes or threads.
 
 
-Requirements and installation
------------------------------
+Requirements
+------------
 
 `df_websockets` works with:
 
@@ -33,6 +33,9 @@ For production use or any multiprocess setup (even in development mode), you als
 
 If you want to process signals in Celery tasks rather in Channel workers, you need to setup a Celery infrastructure:
 [Celery setup](https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html).
+
+Installation
+------------
 
 ```bash
 python -m pip install df_websockets
@@ -144,10 +147,12 @@ _For example, assume that multiple clients open a specific article on a blog. At
 
 ```python
 from df_websockets.tasks import set_websocket_topics
+from django.contrib.auth.models import Group
+from django.template.response import TemplateResponse
 
 def any_view(request):  # this is a standard Django view
     # useful code
-    obj1 = MyModel.objects.get(id=42)
+    obj1 = Group.objects.get(id=42)
     set_websocket_topics(request, [obj1])
     return TemplateResponse("my/template.html", {})  # do not forget to add `js/df_websockets.min.js` to this HTML
 ```
@@ -159,11 +164,12 @@ The following code will call the JS function on every browser window having the 
 ```python
 from df_websockets.tasks import WINDOW, trigger
 from df_websockets.tasks import set_websocket_topics
-
+from django.contrib.auth.models import Group
+from django.http.response import HttpResponse
 def another_view(request, obj_id):
-    obj = MyModel.objects.get(id=42)
+    obj = Group.objects.get(id=42)
     trigger(request, 'myproject.first_signal', to=[WINDOW, obj], content="hello from a view")
-    set_websocket_topics(request, [other_topics])
+    set_websocket_topics(request, ["other topics"])
     return HttpResponse()
 ```
 
