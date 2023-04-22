@@ -25,14 +25,14 @@ CELERY_APP = getattr(settings, "CELERY_APP", "df_websockets")
 
 def compatibility_setting(new_name, old_name, default):
     if hasattr(settings, new_name):
-        return settings.WEBSOCKET_DEFAULT_QUEUE
+        return getattr(settings, new_name)
     elif hasattr(settings, old_name):
         warnings.warn(
             f"{old_name} settings is replaced by {new_name}.",
             category=RemovedInDfWebsockets2Warning,
             stacklevel=2,
         )
-        return settings.CELERY_DEFAULT_QUEUE
+        return getattr(settings, old_name)
     else:
         return default
 

@@ -23,13 +23,15 @@ Requirements
 
   * [Python](https://www.python.org) >= 3.6,
   * [django](https://pypi.org/project/Django/) >= 2.0,
-  * [channels](https://pypi.org/project/channels/) >= 2.0.
+  * [channels](https://pypi.org/project/channels/) >= 2.0,
+  * [daphne](https://pypi.python.org/pypi/daphne) >= 2.0.
 
 
 For production use or any multiprocess setup (even in development mode), you also need:
 
   * [redis](https://redis.io) >= 5.0,
-  * [channels_redis](https://pypi.org/project/channels-redis/) >= 3.3.
+  * [channels_redis](https://pypi.org/project/channels-redis/) >= 3.3,
+  * [daphne](https://pypi.python.org/pypi/daphne) >= 2.0.
 
 If you want to process signals in Celery tasks rather in Channel workers, you need to setup a Celery infrastructure:
 [Celery setup](https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html).
@@ -47,7 +49,7 @@ In your settings, you must add the following values:
 ASGI_APPLICATION = "df_websockets.routing.application"
 # add the required Middleware
 MIDDLEWARES = [..., "df_websockets.middleware.WebsocketMiddleware", ...]
-INSTALLED_APPS = [..., "channels", "df_websockets", ...]
+INSTALLED_APPS = [..., "channels", "daphne", "df_websockets", ...]
 WEBSOCKET_WORKERS = "thread"
 # a channel layer, required by channels_redis
 CHANNEL_LAYERS = {
@@ -70,6 +72,7 @@ You can start the development server:
 python manage.py runserver
 ```
 
+_`daphne` must be present in `INSTALLED_APPS` with `channels>=4.0`_
 
 If you use Channels workers (WEBSOCKET_WORKERS = "channels"), you also need to start a Channel worker:
 ```bash
