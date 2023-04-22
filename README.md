@@ -1,48 +1,56 @@
 df_websockets
 =============
 
-Based on [django-channels](https://channels.readthedocs.io) and [celery](https://docs.celeryproject.org/en/stable/), df_websockets simplifies communication between 
-clients and servers and processing tasks in background processes.
+`df_websockets` extends [django-channels](https://channels.readthedocs.io) to simplify communications between 
+clients and servers and to process heavy tasks in background processes.
 
-df_websockets is based on two main ideas:
+`df_websockets` is based on two main concepts:
 
 * _signals_, that are functions triggered both on the server or the browser  window by either the server or the client,
 * _topics_ to allow the server to send signals to any group of browser windows.
 
 Signals are exchanged between the browser window and the server using a single websocket.
-Signals triggered by the browser on the server are processed as Celery tasks (so the websocket endpoint does almost nothing).
-Signals triggered by the server can be processed as other Celery tasks and as Javascript functions on the browser.
+Signals that are triggered by the browser on the server are processed as background tasks (so the websocket endpoint does almost nothing).
+Signals that are triggered by the server can be processed as background tasks on the serveur and as Javascript functions on the browser.
+
+Background processes can use [celery](https://docs.celeryproject.org/en/stable/), [channels](https://pypi.org/project/channels/) workers, or simply different processes or threads.
 
 
-Requirements and installation
------------------------------
+Requirements
+------------
 
-df_config works with:
+`df_websockets` works with:
 
-  * Python >= 3.6,
-  * redis >= 5.0,
-  * django >= 2.0,
-  * celery >= 4.0,
-  * django-channels >= 2.0,
-  * channels_redis.
+  * [Python](https://www.python.org) >= 3.6,
+  * [django](https://pypi.org/project/Django/) >= 2.0,
+  * [channels](https://pypi.org/project/channels/) >= 2.0,
+  * [daphne](https://pypi.python.org/pypi/daphne) >= 2.0.
 
-You also need a working [redis server](https://redis.io) and [Celery setup](https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html).
+
+For production use or any multiprocess setup (even in development mode), you also need:
+
+  * [redis](https://redis.io) >= 5.0,
+  * [channels_redis](https://pypi.org/project/channels-redis/) >= 3.3,
+  * [daphne](https://pypi.python.org/pypi/daphne) >= 2.0.
+
+If you want to process signals in Celery tasks rather in Channel workers, you need to setup a Celery infrastructure:
+[Celery setup](https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html).
+
+Installation
+------------
 
 ```bash
 python -m pip install df_websockets
 ```
 
-In your settings, if you do not use `df_config`, you must add the following values:
+In your settings, you must add the following values:
 ```python
 # the ASGI application to use with gunicorn or daphne
 ASGI_APPLICATION = "df_websockets.routing.application"
 # add the required Middleware
 MIDDLEWARES = [..., "df_websockets.middleware.WebsocketMiddleware", ...]
-INSTALLED_APPS = [..., "channels", "df_websockets", ...]
-# the required redis connection 
-WEBSOCKET_REDIS_CONNECTION = {'host': 'localhost', 'port': 6379, 'db': 1, 'password': ''}
-# the endpoint for the websocket
-WEBSOCKET_URL = "/ws/"
+INSTALLED_APPS = [..., "channels", "daphne", "df_websockets", ...]
+WEBSOCKET_WORKERS = "thread"
 # a channel layer, required by channels_redis
 CHANNEL_LAYERS = {
     'default': {
@@ -53,18 +61,26 @@ CHANNEL_LAYERS = {
     },
 }
 ```
-**You also need a fully functionnal Celery setup**.
-
 
 If you use `df_config` and you use a local Redis, you have nothing to do: settings are automatically set and everything is working as soon as a Redis is running on your machine.
 
 Now, include `js/df_websockets.min.js` in your HTML and call `df_websockets.tasks.set_websocket_topics(request)` somewhere in the Django view.
 A bidirectionnal websocket connection will be established in your page.
 
-You can start a Celery worker and the development server:
+You can start the development server:
+```bash
+python manage.py runserver
+```
+
+_`daphne` must be present in `INSTALLED_APPS` with `channels>=4.0`_
+
+If you use Channels workers (WEBSOCKET_WORKERS = "channels"), you also need to start a Channel worker:
+```bash
+python manage.py run_worker celery
+```
+If you use Celery (WEBSOCKET_WORKERS = "celery"), you also need to start a Celery worker:
 ```bash
 python manage.py worker -Q celery
-python manage.py runserver
 ```
 
 basic usage
@@ -124,19 +140,24 @@ All open windows will react.
 Topics
 ------
 
-When the server triggers a signal, it can select if the signal is called on the server or on some browser windows.
+You can select the set of connected browser windows that receive a signal triggered by the server, in addition of processing this signal on the server.
 
 A Django view using this signal system must call `set_websocket_topics` to add some ”topics” to this view.
-`js/df_websockets.min.js` must also be added to the resulting HTML. 
+When you trigger a signal on the server, you can target any set topic. All windows featuring this topic will receive this signal.
+
+_For example, assume that multiple clients open a specific article on a blog. At any time, you can open Python shell in a terminal and trigger a signal on all these windows._  
+
 
 ```python
 from df_websockets.tasks import set_websocket_topics
+from django.contrib.auth.models import Group
+from django.template.response import TemplateResponse
 
 def any_view(request):  # this is a standard Django view
     # useful code
-    obj1 = MyModel.objects.get(id=42)
+    obj1 = Group.objects.get(id=42)
     set_websocket_topics(request, [obj1])
-    return TemplateResponse("my/template.html", {})
+    return TemplateResponse("my/template.html", {})  # do not forget to add `js/df_websockets.min.js` to this HTML
 ```
 
 `obj1` must be a Python object that is handled by the `WEBSOCKET_TOPIC_SERIALIZER` function. By default, any string and Django models are valid.
@@ -146,11 +167,12 @@ The following code will call the JS function on every browser window having the 
 ```python
 from df_websockets.tasks import WINDOW, trigger
 from df_websockets.tasks import set_websocket_topics
-
+from django.contrib.auth.models import Group
+from django.http.response import HttpResponse
 def another_view(request, obj_id):
-    obj = MyModel.objects.get(id=42)
+    obj = Group.objects.get(id=42)
     trigger(request, 'myproject.first_signal', to=[WINDOW, obj], content="hello from a view")
-    set_websocket_topics(request, [other_topics])
+    set_websocket_topics(request, ["other topics"])
     return HttpResponse()
 ```
 
@@ -163,6 +185,28 @@ There are three special values:
 Some information about the original window (like its unique identifier or the connected user) must be provided to the triggered Python code, allowing it to trigger JS events on any selected window.  
 These data are stored in the `WindowInfo` object, automatically built from the HTTP request by the trigger function and provided as first argument to the triggered code.
 The `trigger` function accepts `WindowInfo` or `HTTPRequest` objects as first argument.
+
+
+settings
+--------
+
+There are a few settings:
+
+- `WEBSOCKET_WORKERS`: one of "celery" (use Celery tasks), "channels" (use Channels workers), "multithread" (process signals in threads), "multiprocess" (process signals in new processes).
+  The first two choices require at least one valid worker. 
+- `WEBSOCKET_DEFAULT_QUEUE` the default queue for signals (`"celery"` by default)
+
+Other settings are:
+- `WEBSOCKET_CACHE_EXPIRE`: the validity of the association between a websocket connection and the associated topics
+- `WEBSOCKET_CACHE_PREFIX`: prefix of keys used to cache data
+- `WEBSOCKET_CACHE_BACKEND`: the cache backend (`default` by default) — you cannot use LocMemCache with Celery or Channels workers, nor DummyCache with any kind of workers 
+- `WEBSOCKET_SIGNAL_ENCODER`: the JSON encoder to encode signal arguments 
+- `WEBSOCKET_SIGNAL_DECODER`: the JSON decoder to decode signal arguments
+- `WEBSOCKET_TOPIC_SERIALIZER`: the function used to transform Python topics into valid topic names  
+- `WEBSOCKET_POOL_SIZES`: a dict associating a queue name to a number of threads (or processes)
+- `WINDOW_INFO_MIDDLEWARES`: a list of middlewares for transforming a HttpRequest to a WindowInfo 
+- `WEBSOCKET_URL`: URL prefix (`/ws/` by default)
+- `ASGI_APPLICATION`: the ASGI application 
 
 
 HTML forms
@@ -235,8 +279,8 @@ When the field "title" is modified, `my_signal_function(window_info, title="new 
 Testing signals
 ---------------
 
-The signal framework requires a working Redis and a worker process. However, if you only want to check if a signal
-has been called in unitary tests, you can use :class:`df_websockets.utils.SignalQueue`.
+In production, the signal framework requires a working Redis and worker processes.
+However, if you only want to check if a signal has been called in unitary tests, you can use :class:`df_websockets.utils.SignalQueue`.
 Both server-side and client-side signals are kept into memory:
 
 * `df_websockets.testing.SignalQueue.ws_signals`,
@@ -283,6 +327,8 @@ JavaScript signals
 
 Many [JS signals](https://github.com/d9pouces/df_websockets/blob/master/npm/df_websockets/base.js) are available out-of-the-box.
 These signals can be triggered either by the JS code or by the Python code.
+
+Signals must be defined in a Python file that is imported during Django's startup, or in any `signals.py` file inside a Django app (like `models.py`). 
 For example, you can update the content of a HTML node with the following lines:
 
 ```python
@@ -300,6 +346,11 @@ window.DFSignals.call('html.content', {selector: "#obj", content: "<span>hello</
 
 Please read the content of `npm/df_websockets/base.js` for the whole list of available signals. 
 You can also create some shortcuts for the most common signals.
+Another way is to run the demo:
+
+```bash
+python demo_manage.py runserver
+```
 
 Checklist 
 ---------
@@ -392,13 +443,8 @@ LOGGING = {
             "level": "INFO",
             "propagate": True,
         },
-        "daphne.cli": {"handlers": [], "level": "INFO", "propagate": True},
+        "daphne": {"handlers": [], "level": "INFO", "propagate": True},
         "mail.log": {"handlers": [], "level": "INFO", "propagate": True},
-        "django_celery_beat.schedulers": {
-            "handlers": [],
-            "level": "WARN",
-            "propagate": True,
-        },
         "aiohttp.access": {
             "handlers": ["stderr.debug.django.server"],
             "level": "INFO",
@@ -410,11 +456,6 @@ LOGGING = {
             "propagate": False,
         },
         "django.channels.server": {
-            "handlers": ["stderr.debug.django.server"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "geventwebsocket.handler": {
             "handlers": ["stderr.debug.django.server"],
             "level": "INFO",
             "propagate": False,

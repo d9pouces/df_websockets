@@ -13,6 +13,8 @@
 #  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
 #                                                                              #
 # ##############################################################################
+import hashlib
+
 from django.contrib.auth import get_user_model
 from django.db.models import Model
 
@@ -20,7 +22,7 @@ from df_websockets.window_info import Session
 
 
 def serialize_topic(window_info, obj):
-    """The default serialization function can serialize any Python object with the following rules
+    """Serialize any Python object with the following rules as default serialization function.
 
     * :class:`df_websockets.tasks.BROADCAST` to '-broadcast'
     * :class:`df_websockets.tasks.WINDOW` to '-window.' + the unique window key provided
@@ -41,6 +43,8 @@ def serialize_topic(window_info, obj):
         return "-window.%s" % window_info.window_key
     elif isinstance(obj, type):
         return "-<%s>" % obj.__name__
+    elif isinstance(obj, str):
+        return "-str.%s" % hashlib.sha224(obj.encode()).hexdigest()
     elif isinstance(obj, Model):
         # noinspection PyProtectedMember,PyUnresolvedReferences
         meta = obj._meta

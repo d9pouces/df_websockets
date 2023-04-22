@@ -67,13 +67,15 @@ class WindowInfoMiddleware:
 
     def install_methods(self, window_info_cls):
         """add new methods to the WindowInfo class.
-        Used for adding methods related to the user management"""
+        Used for adding methods related to the user management.
+        """
         pass
 
 
 class WindowKeyMiddleware(WindowInfoMiddleware):
     """handle the unique ID generated for each :class:`django.http.request.HttpRequest` and copy
-    it to the :class:`WindowInfo` object"""
+    it to the :class:`WindowInfo` object.
+    """
 
     def from_request(self, request, window_info):
         # noinspection PyTypeChecker
@@ -106,7 +108,7 @@ class DjangoAuthMiddleware(WindowInfoMiddleware):
         window_info._perms = None
         window_info._template_perms = None
         window_info.user_agent = request.META.get("HTTP_USER_AGENT", "")
-        window_info.csrf_cookie = request.COOKIES.get("csrftoken", "")
+        window_info.csrf_cookie = request.COOKIES.get(settings.CSRF_COOKIE_NAME, "")
         if user and user.is_authenticated:
             window_info.user_pk = user.pk
             window_info.username = user.get_username()

@@ -58,52 +58,53 @@ class SignalQueue:
         # javascript_signals[client] = [signal1, signal2, …]
         self.python_signals = {}  # type: Dict[str, List[Tuple[str, Dict]]]
         # javascript_signals[queue] = [signal1, signal2, …]
-        self._old_async_method = None
-        self._old_ws_function = None
+        self._old_call_task_functions = []
+        self._old_ws_functions = []
 
     def activate(self):
-        """replace private function that push signal calls to Celery or Websockets """
-        task_function = getattr(tasks_module, "_server_signal_call")
+        """Replace private function that push signal calls to Celery or Websockets."""
+        # call_task(worker_mode, queue, signal_args, celery_options)
+        task_function = getattr(tasks_module, "process_task")
         encoder = getattr(tasks_module, "_signal_encoder")
         if self.immediate:
-            # noinspection PyUnusedLocal
-            def apply_async(signal_arguments, queue=None, **kwargs):
+
+            def call_task(worker_mode, queue, signal_args, celery_options):
                 json.dumps(
-                    signal_arguments, cls=encoder
+                    signal_args, cls=encoder
                 )  # to check if args are JSON-serializable
-                return task_function(*signal_arguments)
+                return task_function(*signal_args)
 
         else:
             # noinspection PyUnusedLocal
-            def apply_async(signal_arguments, queue=None, **kwargs):
+            def call_task(worker_mode, queue, signal_args, celery_options):
                 json.dumps(
-                    signal_arguments, cls=encoder
+                    signal_args, cls=encoder
                 )  # to check if args are JSON-serializable
-                self.python_signals.setdefault(queue, []).append(signal_arguments)
+                self.python_signals.setdefault(queue, []).append(signal_args)
 
-        self._old_async_method = getattr(task_function, "apply_async")
-        setattr(task_function, "apply_async", apply_async)
+        self._old_call_task_functions.append(getattr(tasks_module, "call_task"))
+        setattr(tasks_module, "call_task", call_task)
 
         # noinspection PyUnusedLocal
-        def ws_signal_call(signal_name, signal_id, serialized_topic, kwargs):
+        async def ws_signal_call(signal_name, signal_id, serialized_topics, kwargs):
             json.dumps(kwargs, cls=encoder)  # to check if args are JSON-serializable
-            self.ws_signals.setdefault(serialized_topic, []).append(
-                (signal_name, kwargs)
-            )
+            if isinstance(serialized_topics, str):
+                serialized_topics = [serialized_topics]
+            for serialized_topic in serialized_topics:
+                self.ws_signals.setdefault(serialized_topic, []).append(
+                    (signal_name, kwargs)
+                )
 
-        self._old_ws_function = getattr(tasks_module, "_call_ws_signal")
+        self._old_ws_functions.append(getattr(tasks_module, "_call_ws_signal"))
         setattr(tasks_module, "_call_ws_signal", ws_signal_call)
 
     def deactivate(self):
-        """ replace the normal private functions for calling Celery or websockets signals"""
-        task = getattr(tasks_module, "_server_signal_call")
-        setattr(task, "apply_async", self._old_async_method)
-        self._old_async_method = None
-        setattr(tasks_module, "_call_ws_signal", self._old_ws_function)
-        self._old_ws_function = None
+        """Replace the normal private functions for calling Celery or websockets signals."""
+        setattr(tasks_module, "call_task", self._old_call_task_functions.pop())
+        setattr(tasks_module, "_call_ws_signal", self._old_ws_functions.pop())
 
     def execute_delayed_signals(self, queues=None):
-        """ execute the Celery signals """
+        """Execute the Celery signals."""
         task = getattr(tasks_module, "_server_signal_call")
         if queues is None:
             queues = self.python_signals.keys()
