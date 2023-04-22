@@ -59,6 +59,11 @@ WEBSOCKET_TOPIC_SERIALIZER = getattr(
     settings, "WEBSOCKET_TOPIC_SERIALIZER", "df_websockets.topics.serialize_topic"
 )
 WEBSOCKET_WORKERS = getattr(settings, "WEBSOCKET_WORKERS", constants.WORKER_CELERY)
+if WEBSOCKET_WORKERS == constants.WORKER_CELERY:
+    try:
+        import celery
+    except ImportError:
+        WEBSOCKET_WORKERS = constants.WORKER_THREAD
 # "celery", "channels", "multithread", "multiprocess"
 WEBSOCKET_POOL_SIZES = getattr(settings, "WEBSOCKET_POOL_SIZES", {None: 10})
 WINDOW_INFO_MIDDLEWARES = getattr(
