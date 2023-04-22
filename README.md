@@ -324,6 +324,8 @@ JavaScript signals
 
 Many [JS signals](https://github.com/d9pouces/df_websockets/blob/master/npm/df_websockets/base.js) are available out-of-the-box.
 These signals can be triggered either by the JS code or by the Python code.
+
+Signals must be defined in a Python file that is imported during Django's startup, or in any `signals.py` file inside a Django app (like `models.py`). 
 For example, you can update the content of a HTML node with the following lines:
 
 ```python
