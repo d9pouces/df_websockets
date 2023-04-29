@@ -22,14 +22,14 @@ const path = require('path');
 // noinspection JSUnresolvedVariable,JSUnresolvedFunction
 module.exports = {
     entry: {
-        "df_websockets": ['./df_websockets/app.js', './df_websockets/base.js', './df_websockets/forms.ts'],
+        "df_websockets": ['./npm/app.js', './npm/base.js', './npm/forms.ts'],
     },
     resolve: {
         extensions: ['.ts', '.js', '.json']
     },
     output: {
-        path: path.resolve(__dirname, '../'),
-        filename: '[name]/static/js/[name].min.js'
+        path: path.resolve(__dirname, './'),
+        filename: 'df_websockets/static/js/[name].min.js'
     },
 
     module: {
