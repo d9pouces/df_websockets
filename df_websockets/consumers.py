@@ -123,6 +123,8 @@ class DFConsumer(WebsocketConsumer):
             request.META["SERVER_NAME"] = "unknown"
             request.META["SERVER_PORT"] = "0"
         request.META["HTTP_X_REQUESTED_WITH"] = "XMLHttpRequest"
+        request.META["wsgi.multithread"] = True
+        request.META["wsgi.multiprocess"] = True
         request.COOKIES = self.scope.get("cookies", {})
         return request
 
