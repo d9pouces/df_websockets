@@ -20,28 +20,80 @@
 const path = require('path');
 
 // noinspection JSUnresolvedVariable,JSUnresolvedFunction
-module.exports = {
+module.exports = [{
+  entry: {
+    "df_websockets": ['./df_websockets/app.js', './df_websockets/base.js', './df_websockets/forms.ts'],
+  },
+  resolve: {
+    extensions: ['.ts', '.js', '.json']
+  },
+  output: {
+    path: path.resolve(__dirname, '../'),
+    filename: 'df_websockets/static/js/[name].min.js'
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      }
+    ]
+  },
+  // Useful for debugging.
+  devtool: 'source-map',
+  performance: {hints: false}
+},
+  {
     entry: {
-        "df_websockets": ['./npm/app.js', './npm/base.js', './npm/forms.ts'],
+      "df_websockets": ['./df_websockets/app.js', './df_websockets/base.js', './df_websockets/forms.ts'],
     },
     resolve: {
-        extensions: ['.ts', '.js', '.json']
+      extensions: ['.ts', '.js', '.json']
     },
     output: {
-        path: path.resolve(__dirname, './'),
-        filename: 'df_websockets/static/js/[name].min.js'
+      path: path.resolve(__dirname, './'),
+      filename: 'dist/js/[name].min.js'
     },
 
     module: {
-        rules: [
-            {
-                test: /\.tsx?$/,
-                use: 'ts-loader',
-                exclude: /node_modules/,
-            }
-        ]
+      rules: [
+        {
+          test: /\.tsx?$/,
+          use: 'ts-loader',
+          exclude: /node_modules/,
+        }
+      ]
     },
     // Useful for debugging.
     devtool: 'source-map',
     performance: {hints: false}
-};
+  },
+  {
+    entry: {
+      "df_websockets": ['./df_websockets/app.js', './df_websockets/base.js', './df_websockets/forms.ts'],
+    },
+    resolve: {
+      extensions: ['.ts', '.js', '.json']
+    },
+    output: {
+      path: path.resolve(__dirname, './'),
+      filename: 'dist/js/[name].js'
+    },
+
+    module: {
+      rules: [
+        {
+          test: /\.tsx?$/,
+          use: 'ts-loader',
+          exclude: /node_modules/,
+        }
+      ]
+    },
+    devtool: 'source-map',
+    optimization: {
+      minimize: false
+    },
+    performance: {hints: "warning"}
+  }];

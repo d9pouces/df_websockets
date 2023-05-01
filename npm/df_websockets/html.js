@@ -20,7 +20,9 @@ export const htmlAfter = opts => {
         elt.insertAdjacentHTML('afterend', opts.content);
         let sibling = elt.nextSibling;
         while (sibling && (sibling !== originalNextSibling)) {
-            sibling.dispatchEvent(new Event('DOMContentAdded', {bubbles: true}));
+            if (sibling.querySelectorAll) {
+                sibling.dispatchEvent(new Event('DOMContentAdded', {bubbles: true}));
+            }
             sibling = sibling.nextSibling;
         }
     });
@@ -31,7 +33,9 @@ export const htmlAppend = opts => {
         elt.insertAdjacentHTML('beforeend', opts.content);
         let child = elt.lastChild;
         while (child && (child !== originalLastChild)) {
-            child.dispatchEvent(new Event('DOMContentAdded', {bubbles: true}));
+            if (child.querySelectorAll) {
+                child.dispatchEvent(new Event('DOMContentAdded', {bubbles: true}));
+            }
             child = child.previousSibling;
         }
     });
@@ -42,7 +46,9 @@ export const htmlPrepend = opts => {
         elt.insertAdjacentHTML('afterbegin', opts.content);
         let child = elt.firstChild;
         while (child && (child !== originalFirstChild)) {
-            child.dispatchEvent(new Event('DOMContentAdded', {bubbles: true}));
+            if (child.querySelectorAll) {
+                child.dispatchEvent(new Event('DOMContentAdded', {bubbles: true}));
+            }
             child = child.nextSibling;
         }
     });
@@ -53,7 +59,9 @@ export const htmlBefore = opts => {
         elt.insertAdjacentHTML('beforebegin', opts.content);
         let sibling = elt.previousSibling;
         while (sibling && (sibling !== originalPreviousSibling)) {
-            sibling.dispatchEvent(new Event('DOMContentAdded', {bubbles: true}));
+            if (sibling.querySelectorAll) {
+                sibling.dispatchEvent(new Event('DOMContentAdded', {bubbles: true}));
+            }
             sibling = sibling.previousSibling;
         }
     });
@@ -63,26 +71,32 @@ export const htmlContent = (opts) => {
         elt.innerHTML = opts.content;
         let child = elt.firstChild;
         while (child) {
-            child.dispatchEvent(new Event('DOMContentAdded', {bubbles: true}));
+            if (child.querySelectorAll) {
+                child.dispatchEvent(new Event('DOMContentAdded', {bubbles: true}));
+            }
             child = child.nextSibling;
         }
     });
 };
 export const htmlReplaceWith = (opts) => {
     document.querySelectorAll(opts.selector).forEach(elt => {
-        const previousSibling = elt.previousSibling;
-        const nextSibling = elt.nextSibling;
-        const parentNode = elt.parentNode;
-        elt.outerHTML = opts.content;
-        let sibling = parentNode.firstChild;
-        if (previousSibling) {
-            sibling = previousSibling.nextSibling;
+            const previousSibling = elt.previousSibling;
+            const nextSibling = elt.nextSibling;
+            const parentNode = elt.parentNode;
+            elt.outerHTML = opts.content;
+            let sibling = parentNode.firstChild;
+            if (previousSibling) {
+                sibling = previousSibling.nextSibling;
+            }
+            while (sibling && (sibling !== nextSibling)) {
+                if (sibling.querySelectorAll) {
+                    sibling.dispatchEvent(new Event('DOMContentAdded', {bubbles: true}));
+                }
+                sibling = sibling.nextSibling;
+            }
         }
-        while (sibling && (sibling !== nextSibling)) {
-            sibling.dispatchEvent(new Event('DOMContentAdded', {bubbles: true}));
-            sibling = sibling.nextSibling;
-        }
-    });
+    )
+    ;
 };
 export const htmlEmpty = opts => {
     document.querySelectorAll(opts.selector).forEach(elt => {

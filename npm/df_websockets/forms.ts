@@ -130,7 +130,7 @@ interface Signal {
 }
 
 (() => {
-    function DOMContentAdded(evt: Event) {
+    function websocketForms(evt: Event) {
         /*
         search all HTML elements with an attribute "data-df-signal" that contains a JSON list of Signal objects:
         {
@@ -185,6 +185,9 @@ interface Signal {
         id = 42
         ```
          */
+        if (!(<HTMLElement>evt.target).querySelectorAll) {
+            return;
+        }
         (<HTMLElement>evt.target).querySelectorAll("[data-df-signal]").forEach(
             (target: HTMLInputElement | HTMLSelectElement | HTMLFormElement) => {
                 const signals = <Array<Signal>>JSON.parse(target.getAttribute("data-df-signal"));
@@ -244,15 +247,15 @@ interface Signal {
 
     document.addEventListener("DOMContentAdded", (evt) => {
         window.setTimeout(() => {
-            DOMContentAdded(evt);
-        }, 200);
+            websocketForms(evt);
+        }, 50);
         // awful trick for being sure that our addEventListener is the last.
         // allows things like CKEditor to push its content to the textarea before sending the content of the form.
     });
     document.addEventListener("DOMContentLoaded", (evt) => {
         window.setTimeout(() => {
-            DOMContentAdded(evt);
-        }, 200);
+            websocketForms(evt);
+        }, 50);
         // awful trick for being sure that our addEventListener is the last.
         // allows things like CKEditor to push its content to the textarea before sending the content of the form.
     });
