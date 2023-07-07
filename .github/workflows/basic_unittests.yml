@@ -6,7 +6,7 @@ on:
     - dev
 jobs:
   unittests:
-    name: Python ${{ matrix.python-version }}
+    name: Python ${{ matrix.python-version }} / Django ${{ matrix.django-version }} / Channels ${{ matrix.channels-version }}
     runs-on: ubuntu-22.04
     strategy:
       matrix:
