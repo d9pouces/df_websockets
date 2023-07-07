@@ -1,0 +1,25 @@
+name: Basic unittests
+on:
+  push:
+    branches:
+    - master
+    - dev
+jobs:
+  unittests:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+        django-version: ['3.2', '4.0', '4.1', '4.2']
+        channels-version: ['3.0.5', '4.0.0']
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - run: python3 -m pip install --upgrade setuptools pip wheel
+    - run: python3 -m pip install ${{ matrix.django-version }} ${{ matrix.channels-version }}
+    - run: python3 setup.py develop
+    - run: python3 demo_manage.py migrate
+    - run: python3 demo_manage.py test
