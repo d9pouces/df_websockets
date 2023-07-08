@@ -19,7 +19,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - run: python3 -m pip install --upgrade setuptools pip wheel
-    - run: python3 -m pip install 'django==${{ matrix.django-version }}' 'channels==${{ matrix.channels-version }}'
+    - run: python3 -m pip install 'django==${{ matrix.django-version }}' 'channels==${{ matrix.channels-version }}' daphne
     - run: python3 setup.py develop
     - run: python3 demo_manage.py migrate
     - run: python3 demo_manage.py test
