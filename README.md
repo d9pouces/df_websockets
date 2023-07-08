@@ -72,7 +72,7 @@ You can start the development server:
 python manage.py runserver
 ```
 
-_`daphne` must be present in `INSTALLED_APPS` with `channels>=4.0`_
+_`daphne` must be separately installed and added to `INSTALLED_APPS` with `channels>=4.0`_ 
 
 If you use Channels workers (WEBSOCKET_WORKERS = "channels"), you also need to start a Channel worker:
 ```bash
@@ -208,6 +208,37 @@ Other settings are:
 - `WEBSOCKET_URL`: URL prefix (`/ws/` by default)
 - `ASGI_APPLICATION`: the ASGI application 
 
+Cache backends
+--------------
+
+Task data are passed by the server process to the workers using the Django cache infrastructure. 
+For obvious reasons, you cannot use DummyCache nor LocMemCache with Celery or Channels workers, since these caching methods are not shared accross processes.
+So, you need either to use a shared cache backend as default backend, or dedicate a cache backend to websockets. 
+
+First case needs to update your `settings.py` file:
+```python
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+    }
+}
+```
+
+Second case, still in your `settings.py` file:
+```python
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    },
+    "websockets": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+    },
+}
+WEBSOCKET_CACHE_BACKEND = "websockets"
+```
 
 HTML forms
 ----------
