@@ -1,6 +1,6 @@
 {
   "name": "@d9pouces/df_websockets",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "license": "CECILL-B",
   "description": "Websocket integration for Django",
   "repository": {

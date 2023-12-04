@@ -306,7 +306,9 @@ async def _trigger_signal_async(
 def call_task(worker_mode, queue, signal_args, celery_options):
     if worker_mode == WORKER_CELERY:
         logger.debug("Call Celery task to queue %s.", queue)
-        _server_signal_call.apply_async(args=signal_args, queue=queue, **celery_options)
+        _server_signal_call.apply_async(
+            args=signal_args, queue=queue, add_to_parent=False, **celery_options
+        )
     elif worker_mode == WORKER_CHANNEL:
         logger.debug("Call Channels task to queue %s.", queue)
         channel_layer = get_channel_layer(DEFAULT_CHANNEL_LAYER)
