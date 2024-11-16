@@ -40,6 +40,8 @@ jobs:
           python-version: '3.13'
         - django-version: '3.2'
           python-version: '3.13'
+        - channels-version: 3.0.5
+          python-version: '3.13'
     steps:
     - uses: actions/checkout@v4.2.2
     - uses: actions/setup-python@v5.3.0
