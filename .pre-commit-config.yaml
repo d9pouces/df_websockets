@@ -1,14 +1,12 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
-- repo: https://github.com/d9pouces/mybestpractices
-  rev: 0.3.1
-  hooks:
-  - id: mybestpractices-git-autotag
-  - id: mybestpractices-sync-npm
-    args: ["-p", "npm/package.json"]
+-   repo: https://github.com/d9pouces/mybestpractices
+    rev: 0.3.4
+    hooks:
+    -   id: mybestpractices-git-autotag
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
     -   id: check-added-large-files
     -   id: check-ast
@@ -19,21 +17,18 @@ repos:
     -   id: check-toml
     -   id: check-yaml
 -   repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: 23.12.1
     hooks:
     -   id: black
--   repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
-    hooks:
-    -   id: flake8
 -   repo: https://github.com/PyCQA/pydocstyle
     rev: 6.3.0
     hooks:
     -   id: pydocstyle
 -   repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
     -   id: isort
+        args: ["--profile=black"]
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
