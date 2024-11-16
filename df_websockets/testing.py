@@ -13,9 +13,10 @@
 #  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
 #                                                                              #
 # ##############################################################################
+"""Allow to keep called signals in memory instead of actualling sending them to Redis, for testing purposes."""
 
 import json
-from typing import Dict, List, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from df_websockets import tasks as tasks_module
 
@@ -31,7 +32,7 @@ class SignalQueue:
     >>> from df_websockets.decorators import signal
     >>> # noinspection PyUnusedLocal
     >>> @signal(path='test.signal', queue='demo-queue')
-    >>> def test_signal(window_info, value=None):
+    ... def test_signal(window_info, value=None):
     ...     # noinspection PyUnresolvedReferences
     ...     print(value)
     >>>
@@ -43,9 +44,9 @@ class SignalQueue:
     >>> serialize_topic(wi, 1) in fd.ws_signals
     True
     >>> fd.ws_signals[serialize_topic(wi, 1)]
-    ('test.signal', {'value': 'test value'})
+    [('test.signal', {'value': 'test value'})]
     >>> fd.execute_delayed_signals()
-    'test value'
+    test value
 
 
     Of course, you should use this example from a method of a :class:`django.test.TestCase`.
@@ -53,10 +54,11 @@ class SignalQueue:
     """
 
     def __init__(self, immediate_execution: bool = False):
+        """Initialize the mocked signal queue."""
         self.immediate = immediate_execution
-        self.ws_signals = {}  # type: Dict[str, List[Tuple[str, Dict]]]
+        self.ws_signals: Dict[str, List[Tuple[str, Dict]]] = {}
         # javascript_signals[client] = [signal1, signal2, …]
-        self.python_signals = {}  # type: Dict[str, List[Tuple[str, Dict]]]
+        self.python_signals: Dict[str, List[Tuple[str, Dict]]] = {}
         # javascript_signals[queue] = [signal1, signal2, …]
         self._old_call_task_functions = []
         self._old_ws_functions = []
@@ -103,19 +105,24 @@ class SignalQueue:
         setattr(tasks_module, "call_task", self._old_call_task_functions.pop())
         setattr(tasks_module, "_call_ws_signal", self._old_ws_functions.pop())
 
-    def execute_delayed_signals(self, queues=None):
-        """Execute the Celery signals."""
+    def execute_delayed_signals(self, queues: Optional[Iterable[str]] = None):
+        """Execute the server-side signals.
+
+        :param queues: list of queues to execute (if None, all queues are executed)
+        """
         task = getattr(tasks_module, "_server_signal_call")
         if queues is None:
-            queues = self.python_signals.keys()
+            queues = list(self.python_signals)
         for queue in queues:
-            while queues[queue]:
+            while self.python_signals[queue]:
                 signal_arguments = self.python_signals[queue].pop()
                 task(*signal_arguments)
 
     def __enter__(self):
+        """Activate the signal queue."""
         self.activate()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Restore the original functions."""
         self.deactivate()

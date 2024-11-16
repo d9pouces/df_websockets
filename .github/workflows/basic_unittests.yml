@@ -7,19 +7,19 @@ on:
 jobs:
   unittests:
     name: Python ${{ matrix.python-version }} / Django ${{ matrix.django-version }} / Channels ${{ matrix.channels-version }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
-        django-version: ['3.2', '4.0', '4.1', '4.2']
-        channels-version: ['3.0.5', '4.0.0']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        django-version: ['3.2', '4.0', '4.1', '4.2', '5.0', '5.1']
+        channels-version: [3.0.5, 4.0.0, 4.1.0, 4.2.0]
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
+    - uses: actions/checkout@v4.2.2
+    - uses: actions/setup-python@v5.3.0
       with:
         python-version: ${{ matrix.python-version }}
-    - run: python3 -m pip install --upgrade setuptools pip wheel
+    - run: python3 -m pip install --upgrade setuptools pip celery daphne pytest-django
     - run: python3 -m pip install 'django==${{ matrix.django-version }}' 'channels==${{ matrix.channels-version }}' daphne
-    - run: python3 setup.py develop
-    - run: python3 demo_manage.py migrate
-    - run: python3 demo_manage.py test
+    - run: python3 -m pip install .
+    - run: python3 -m demo_df_websockets migrate
+    - run: python3 -m pytest -s --doctest-modules --doctest-glob=df_websockets/*.py --doctest-glob=df_websockets/**/*.py

@@ -66,7 +66,7 @@ from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo, middlewares
 
 logger = logging.getLogger("df_websockets.signals")
-_PROCESS_POOLS = {}  # type: Dict[str, multiprocessing.pool.Pool]
+_PROCESS_POOLS: Dict[str, multiprocessing.pool.Pool] = {}
 
 
 class Constant:
@@ -330,7 +330,7 @@ def call_task(worker_mode, queue, signal_args, celery_options):
                     pool_size, initializer=django.setup, initargs=()
                 )
             _PROCESS_POOLS[queue] = pool
-        pool = _PROCESS_POOLS[queue]  # type: multiprocessing.pool.Pool
+        pool: multiprocessing.pool.Pool = _PROCESS_POOLS[queue]
         pool.apply_async(process_task, args=signal_args)
     else:
         raise ImproperlyConfigured(
@@ -424,7 +424,9 @@ def import_signals_and_functions():
 
     if ws_settings.WEBSOCKET_WORKERS == WORKER_CELERY:
         # noinspection PyUnresolvedReferences
-        import df_websockets.celery
+        from df_websockets.celery import get_project_module_name
+
+        get_project_module_name()
     for app_config in apps.app_configs.values():
         app = app_config.name
         package_dir = app_config.path

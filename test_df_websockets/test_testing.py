@@ -8,7 +8,7 @@ from df_websockets.window_info import WindowInfo
 
 # noinspection PyUnusedLocal
 @signal(path="test.signal", queue="test-queue")
-def test_fn(window_info: WindowInfo, arg_1=None):
+def signal_function(window_info: WindowInfo, arg_1=None):
     pass
 
 

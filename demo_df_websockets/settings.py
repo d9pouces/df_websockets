@@ -9,11 +9,14 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-import os
+
 from pathlib import Path
 from typing import List
 
-from df_websockets.constants import WORKER_CHANNEL, WORKER_THREAD
+# noinspection PyPep8Naming
+from django import VERSION as django_version
+
+from df_websockets.constants import WORKER_CHANNEL as WORKER_CHANNEL_, WORKER_THREAD
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
@@ -26,7 +29,7 @@ SECRET_KEY = "=$@-4on)b3h@-6s#e-sks3!v)10&rq64+p0#c$)8-8_%=zzel("
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1:8000", "127.0.0.1"]  # type: List[str]
+ALLOWED_HOSTS: List[str] = ["127.0.0.1:8000", "127.0.0.1"]
 CSRF_COOKIE_DOMAIN = "127.0.0.1"
 
 ROOT_URLCONF = "demo_df_websockets.urls"
@@ -50,7 +53,8 @@ TEMPLATES = [
 STATIC_URL = "/static/"
 
 # Application definition
-
+if django_version[0] < 5:
+    USE_TZ = True  # useless in Django 5.0
 INSTALLED_APPS = [
     "channels",
     "df_websockets",
@@ -76,6 +80,7 @@ MIDDLEWARE = [
 ]
 ASGI_APPLICATION = "df_websockets.routing.application"
 WEBSOCKET_WORKERS = WORKER_THREAD
+WORKER_CHANNEL = WORKER_CHANNEL_
 WINDOW_INFO_MIDDLEWARES = [
     "df_websockets.ws_middleware.WindowKeyMiddleware",
     "df_websockets.ws_middleware.DjangoAuthMiddleware",
@@ -115,13 +120,13 @@ LOGGING = {
     "handlers": {
         "stdout.info": {
             "class": "logging.StreamHandler",
-            "level": "DEBUG",
+            "level": "ERROR",
             "stream": "ext://sys.stdout",
             "formatter": "verbose",
         },
         "stderr.debug.django.server": {
             "class": "logging.StreamHandler",
-            "level": "DEBUG",
+            "level": "ERROR",
             "stream": "ext://sys.stderr",
             "formatter": "django.server",
         },
@@ -141,24 +146,24 @@ LOGGING = {
         "mail.log": {"handlers": [], "level": "INFO", "propagate": True},
         "aiohttp.access": {
             "handlers": ["stderr.debug.django.server"],
-            "level": "INFO",
+            "level": "ERROR",
             "propagate": False,
         },
         "django.server": {
             "handlers": ["stderr.debug.django.server"],
-            "level": "INFO",
+            "level": "ERROR",
             "propagate": False,
         },
         "django.channels.server": {
             "handlers": ["stderr.debug.django.server"],
-            "level": "INFO",
+            "level": "ERROR",
             "propagate": False,
         },
         "gunicorn.access": {
             "handlers": ["stderr.debug.django.server"],
-            "level": "INFO",
+            "level": "ERROR",
             "propagate": False,
         },
     },
-    "root": {"handlers": ["stdout.info"], "level": "DEBUG"},
+    "root": {"handlers": ["stdout.info"], "level": "ERROR"},
 }

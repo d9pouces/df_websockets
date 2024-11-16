@@ -1,5 +1,19 @@
-r"""Decorators to declare signals and remote functions
-==================================================
+# ##############################################################################
+#  This file is part of df_websockets                                          #
+#                                                                              #
+#  Copyright (C) 2020 Matthieu Gallet <github@19pouces.net>                    #
+#  All Rights Reserved                                                         #
+#                                                                              #
+#  You may use, distribute and modify this code under the                      #
+#  terms of the (BSD-like) CeCILL-B license.                                   #
+#                                                                              #
+#  You should have received a copy of the CeCILL-B license with                #
+#  this file. If not, please visit:                                            #
+#  https://cecill.info/licences/Licence_CeCILL-B_V1-en.txt (English)           #
+#  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
+#                                                                              #
+# ##############################################################################
+r"""Decorators to declare signals and remote functions.
 
 ALso define common functions for allowing (or not) signal calls to user, and several tools for checking arguments
 provided to the signal (or function).
@@ -48,22 +62,6 @@ The registered Python code can use py3 annotation for specifying data types.
 
 """
 
-# ##############################################################################
-#  This file is part of df_websockets                                          #
-#                                                                              #
-#  Copyright (C) 2020 Matthieu Gallet <github@19pouces.net>                    #
-#  All Rights Reserved                                                         #
-#                                                                              #
-#  You may use, distribute and modify this code under the                      #
-#  terms of the (BSD-like) CeCILL-B license.                                   #
-#                                                                              #
-#  You should have received a copy of the CeCILL-B license with                #
-#  this file. If not, please visit:                                            #
-#  https://cecill.info/licences/Licence_CeCILL-B_V1-en.txt (English)           #
-#  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
-#                                                                              #
-# ##############################################################################
-
 import logging
 import random
 import re
@@ -73,8 +71,6 @@ from typing import Dict, List, Type
 from df_websockets import ws_settings
 
 logger = logging.getLogger("df_websockets.signals")
-
-REGISTERED_SIGNALS = {}  # type: Dict[str, List[Connection]]
 
 
 class DynamicQueueName:
@@ -90,6 +86,7 @@ class DynamicQueueName:
 
     def get_available_queues(self):
         """Return the set of all queues that can be returned by the `__call__` method.
+
         However, if this method is not implemented, the impact is currently limited:
           * the monitoring view will not display all required queues,
           * the systemd service files (provided by the `packaging` command) will not create all required workers.
@@ -112,7 +109,7 @@ class RandomDynamicQueueName(DynamicQueueName):
     """
 
     def __init__(self, prefix: str, size: int):
-        """
+        """Initialize the queue name generator.
 
         :param prefix: prefix of the queue
         :param size: number of available queues
@@ -121,9 +118,11 @@ class RandomDynamicQueueName(DynamicQueueName):
         self.size = size
 
     def __call__(self, connection, window_info, original_kwargs):
+        """Return a random queue name."""
         return "%s%d" % (self.prefix, random.randint(0, self.size - 1))
 
     def get_available_queues(self):
+        """Return the set of all queues that can be returned by the `__call__` method."""
         return {"%s%d" % (self.prefix, x) for x in range(self.size)}
 
 
@@ -144,10 +143,11 @@ def server_side(connection, window_info, kwargs):
 
 # noinspection PyUnusedLocal
 def everyone(connection, window_info, kwargs):
-    """Allow everyone to call a Python WS signal or remote function
+    """Allow everyone to call a Python WS signal or remote function.
 
-    >>> @signal(is_allowed_to=everyone)
-    ... def my_signal(request, arg1=None):
+    >>> # noinspection PyShadowingNames
+    ... @signal(is_allowed_to=everyone)
+    ... def my_signal(window_info, arg1=None):
     ...     # noinspection PyUnresolvedReferences
     ...     print(request, arg1)
     """
@@ -156,10 +156,11 @@ def everyone(connection, window_info, kwargs):
 
 # noinspection PyUnusedLocal
 def is_authenticated(connection, window_info, kwargs):
-    """Restrict a WS signal or a WS function to authenticated users
+    """Restrict a WS signal or a WS function to authenticated users.
 
-    >>> @signal(is_allowed_to=is_authenticated)
-    ... def my_signal(request, arg1=None):
+    >>> # noinspection PyShadowingNames
+    ... @signal(is_allowed_to=is_authenticated)
+    ... def my_signal(window_info, arg1=None):
     ...     # noinspection PyUnresolvedReferences
     ...     print(request, arg1)
     """
@@ -168,10 +169,11 @@ def is_authenticated(connection, window_info, kwargs):
 
 # noinspection PyUnusedLocal
 def is_anonymous(connection, window_info, kwargs):
-    """Restrict a WS signal or a WS function to anonymous users
+    """Restrict a WS signal or a WS function to anonymous users.
 
-    >>> @signal(is_allowed_to=is_anonymous)
-    ... def my_signal(request, arg1=None):
+    >>> # noinspection PyShadowingNames
+    ... @signal(is_allowed_to=is_anonymous)
+    ... def my_signal(window_info, arg1=None):
     ...     # noinspection PyUnresolvedReferences
     ...     print(request, arg1)
     """
@@ -180,10 +182,11 @@ def is_anonymous(connection, window_info, kwargs):
 
 # noinspection PyUnusedLocal
 def is_staff(connection, window_info, kwargs):
-    """Restrict a WS signal or a WS function to staff users
+    """Restrict a WS signal or a WS function to staff users.
 
-    >>> @signal(is_allowed_to=is_staff)
-    ... def my_signal(request, arg1=None):
+    >>> # noinspection PyShadowingNames
+    ... @signal(is_allowed_to=is_staff)
+    ... def my_signal(window_info, arg1=None):
     ...     # noinspection PyUnresolvedReferences
     ...     print(request, arg1)
     """
@@ -192,10 +195,11 @@ def is_staff(connection, window_info, kwargs):
 
 # noinspection PyUnusedLocal
 def is_superuser(connection, window_info, kwargs):
-    """restrict a WS signal or a WS function to superusers
+    """Restrict a WS signal or a WS function to superusers.
 
-    >>> @signal(is_allowed_to=is_superuser)
-    ... def my_signal(request, arg1=None):
+    >>> # noinspection PyShadowingNames
+    ... @signal(is_allowed_to=is_superuser)
+    ... def my_signal(window_info, arg1=None):
     ...     # noinspection PyUnresolvedReferences
     ...     print(request, arg1)
     """
@@ -204,19 +208,22 @@ def is_superuser(connection, window_info, kwargs):
 
 # noinspection PyPep8Naming
 class has_perm:
-    """restrict a WS signal or a WS function to users with permission "perm"
+    """Restrict a WS signal or a WS function to users with permission "perm".
 
-    >>> @signal(is_allowed_to=has_perm('app_label.codename'))
-    ... def my_signal(request, arg1=None):
+    >>> # noinspection PyShadowingNames
+    ... @signal(is_allowed_to=has_perm('app_label.codename'))
+    ... def my_signal(window_info, arg1=None):
     ...     # noinspection PyUnresolvedReferences
     ...     print(request, arg1)
     """
 
     def __init__(self, perm):
+        """Create a new permission checker."""
         self.perm = perm
 
     # noinspection PyUnusedLocal
     def __call__(self, connection, window_info, kwargs):
+        """Check if the user has the required permission."""
         return window_info and window_info.has_perm(self.perm)
 
 
@@ -229,6 +236,7 @@ class Connection:
     required_function_arg = "window_info"
 
     def __init__(self, fn, path=None, is_allowed_to=server_side, queue=None):
+        """Create a new connection."""
         self.function = fn
         if not path:
             if getattr(fn, "__module__", None) and getattr(fn, "__name__", None):
@@ -252,6 +260,7 @@ class Connection:
 
     def signature_check(self, fn):
         """Analyze the signature of the registered Python code, and store the annotations.
+
         Check if the first argument is `window_info`.
         """
         # fetch signature to analyze arguments
@@ -287,6 +296,7 @@ class Connection:
 
     def check(self, kwargs):
         """Check the provided kwargs and apply provided annotations to it.
+
         Return `None` if something is invalid (like an error raised by an annotation or a missing argument).
         """
         cls = self.__class__.__name__
@@ -328,6 +338,7 @@ class Connection:
         return kwargs
 
     def __call__(self, window_info, **kwargs):
+        """Call the registered Python code."""
         return self.function(window_info, **kwargs)
 
     def register(self):
@@ -342,13 +353,14 @@ class Connection:
 
 
 class SignalConnection(Connection):
-    """represents a connected signal."""
+    """Represents a connected signal."""
 
     def register(self):
-        """register the signal into the `REGISTERED_SIGNALS` dict."""
+        """Register the signal into the `REGISTERED_SIGNALS` dict."""
         REGISTERED_SIGNALS.setdefault(self.path, []).append(self)
 
     def call(self, window_info, **kwargs):
+        """Call the registered signal."""
         from df_websockets import tasks
 
         tasks.trigger_signal(window_info, self.path, to=tasks.SERVER, kwargs=kwargs)
@@ -374,3 +386,6 @@ def signal(
     if fn is not None:
         wrapped = wrapped(fn)
     return wrapped
+
+
+REGISTERED_SIGNALS: Dict[str, List[Connection]] = {}

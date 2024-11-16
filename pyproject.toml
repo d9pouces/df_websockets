@@ -1,0 +1,71 @@
+# ##############################################################################
+# This file is part of df_websockets                                          #
+# #
+# Copyright (C) 2020 Matthieu Gallet <github@19pouces.net>                    #
+# All Rights Reserved                                                         #
+# #
+# You may use, distribute and modify this code under the                      #
+# terms of the (BSD-like) CeCILL-B license.                                   #
+# #
+# You should have received a copy of the CeCILL-B license with                #
+# this file. If not, please visit:                                            #
+# https://cecill.info/licences/Licence_CeCILL-B_V1-en.txt (English)           #
+# or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
+# #
+# ##############################################################################
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]
+
+[tool.poetry]
+authors = ["Matthieu Gallet <github@19pouces.net>"]
+classifiers = [
+  'Development Status :: 5 - Production/Stable',
+  'Framework :: Django :: 3.1',
+  'Framework :: Django :: 3.2',
+  'Framework :: Django :: 4.0',
+  'Framework :: Django :: 4.1',
+  'Framework :: Django :: 4.2',
+  'Framework :: Django :: 5.0',
+  'Framework :: Django :: 5.1',
+  'License :: OSI Approved :: CEA CNRS Inria Logiciel Libre License, version 2.1 (CeCILL-2.1)',
+  'Operating System :: MacOS :: MacOS X',
+  'Operating System :: Microsoft :: Windows',
+  'Operating System :: POSIX :: BSD',
+  'Operating System :: POSIX :: Linux',
+  'Operating System :: Unix',
+  'Programming Language :: Python :: 3 :: Only',
+  'Programming Language :: Python :: 3.9',
+  'Programming Language :: Python :: 3.10',
+  'Programming Language :: Python :: 3.11',
+  'Programming Language :: Python :: 3.12',
+  'Programming Language :: Python :: 3.13'
+]
+description = "Websocket integration for Django"
+documentation = 'https://github.com/d9pouces/df_websockets'
+license = "CECILL-B"
+maintainers = ["Matthieu Gallet <github@19pouces.net>"]
+name = "df_websockets"
+packages = [{include = "df_websockets"}]
+readme = "README.md"
+repository = 'https://github.com/d9pouces/df_websockets'
+version = "1.1.0"
+
+[tool.poetry.dependencies]
+channels-redis = "^4.2.1"
+django = ">=2.2"
+python = ">=3.9"
+
+[tool.poetry.group.dev.dependencies]
+celery = "^5.4.0"
+coverage = "^7.6.4"
+daphne = "^4.1.2"
+pytest-django = "^4.9.0"
+tox = ">=4.4.12"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "demo_df_websockets.settings"
+minversion = "6.0"
+required_plugins = "pytest-django"
+testpaths = ["test_df_websockets", "df_websockets"]

@@ -13,6 +13,8 @@
 #  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
 #                                                                              #
 # ##############################################################################
+"""Django Channels consumers for the unique websocket connection."""
+
 import json
 import logging
 from functools import lru_cache
@@ -34,13 +36,14 @@ from df_websockets.constants import WEBSOCKET_KEY_COOKIE_NAME
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
-logger = logging.getLogger("df_websockets.signals")
+logger = logging.getLogger(__name__)
 _signal_encoder = import_string(ws_settings.WEBSOCKET_SIGNAL_ENCODER)
 topic_serializer = import_string(ws_settings.WEBSOCKET_TOPIC_SERIALIZER)
 signal_decoder = import_string(ws_settings.WEBSOCKET_SIGNAL_DECODER)
 
 
 def get_websocket_topics(request: Union[HttpRequest, WindowInfo]):
+    """Return the topics to which the websocket is bound."""
     if not hasattr(request, "window_key"):
         return []
     # noinspection PyUnresolvedReferences
@@ -55,24 +58,33 @@ def get_websocket_topics(request: Union[HttpRequest, WindowInfo]):
 
 
 class WebsocketHandler(BaseHandler):
+    """A Django handler for websockets."""
+
+    # noinspection PyMethodMayBeStatic
     def _get_response(self, request):
+        """Return a response from the Django handler."""
         return HttpResponse(status=200)
 
 
 @lru_cache()
 def get_handler():
+    """Return a new Django handler."""
     handler = WebsocketHandler()
     handler.load_middleware()
     return handler
 
 
 class DFConsumer(WebsocketConsumer):
+    """A Django Channels consumer that connects to a websocket."""
+
     def __init__(self, *args, **kwargs):
+        """Create a new DFConsumer for this websocket connection."""
         super().__init__(*args, **kwargs)
-        self.window_info = None  # type: Optional[WindowInfo]
+        self.window_info: Optional[WindowInfo] = None
         self.topics = []
 
     def connect(self):
+        """Connect the websockets to all topics."""
         try:
             request = self.build_http_request()
             handler = get_handler()
@@ -95,6 +107,7 @@ class DFConsumer(WebsocketConsumer):
             raise e
 
     def build_http_request(self):
+        """Build an HttpRequest from the ASGI scope."""
         request = HttpRequest()
         query_string = self.scope.get("query_string", "")
         if isinstance(query_string, bytes):
@@ -129,16 +142,19 @@ class DFConsumer(WebsocketConsumer):
         return request
 
     def disconnect(self, close_code):
+        """Disconnect from all topics."""
         for topic in self.topics:
             async_to_sync(self.channel_layer.group_discard)(topic, self.channel_name)
 
     # Receive message from room group
     def ws_message(self, event):
+        """Receive a message from the Python code and send it to the websocket."""
         message = event["message"]
         self.send(text_data=message)
 
     # Receive message from WebSocket
     def receive(self, text_data=None, bytes_data=None):
+        """Receive a message from the WebSocket and trigger a background task."""
         try:
             msg = json.loads(text_data)
             logger.debug('WS message received "%s"', text_data)
@@ -164,11 +180,14 @@ class DFConsumer(WebsocketConsumer):
 
 
 class BackgroundConsumer(SyncConsumer):
+    """A django-channel consumer that processes signals in the background."""
+
     # noinspection PyMethodMayBeStatic
     def process_signal(
         self,
         data,
     ):
+        """Process a signal."""
         (
             signal_name,
             window_info_dict,
@@ -191,11 +210,15 @@ class BackgroundConsumer(SyncConsumer):
 
 
 class DFChannelNameRouter(ChannelNameRouter):
+    """A ChannelNameRouter that routes to a BackgroundConsumer."""
+
     def __init__(self):
+        """Create a new ChannelNameRouter."""
         super().__init__({})
         self.application = BackgroundConsumer.as_asgi()
 
     async def __call__(self, scope, receive, send):
+        """Receive a scope and return an ASGI application."""
         if "channel" not in scope:
             raise ValueError(
                 "ChannelNameRouter got a scope without a 'channel' key. "
