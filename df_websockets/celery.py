@@ -13,8 +13,7 @@
 #  or https://cecill.info/licences/Licence_CeCILL-B_V1-fr.txt (French)         #
 #                                                                              #
 # ##############################################################################
-"""load Celery and discover tasks
-==============================
+"""Load Celery and discover tasks.
 
 You should not use this module (or rename it), as it is only used to auto-discover tasks.
 
@@ -61,7 +60,7 @@ def get_celery_settings():
 # noinspection PyUnusedLocal
 @signals.setup_logging.connect
 def setup_celery_logging(**kwargs):
-    """Use to setup the logs, overriding the default Celery configuration."""
+    """Use to set up the logs, overriding the default Celery configuration."""
     logging.config.dictConfig(settings.LOGGING)
 
 
