@@ -1,43 +1,50 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
--   repo: https://github.com/d9pouces/mybestpractices
-    rev: 0.3.4
-    hooks:
-    -   id: mybestpractices-git-autotag
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
-    hooks:
-    -   id: check-added-large-files
-    -   id: check-ast
-    -   id: check-case-conflict
-    -   id: check-executables-have-shebangs
-    -   id: check-json
-    -   id: check-merge-conflict
-    -   id: check-toml
-    -   id: check-yaml
--   repo: https://github.com/psf/black
-    rev: 23.12.1
-    hooks:
-    -   id: black
--   repo: https://github.com/PyCQA/pydocstyle
-    rev: 6.3.0
-    hooks:
-    -   id: pydocstyle
--   repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
-    hooks:
-    -   id: isort
-        args: ["--profile=black"]
--   repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
-    hooks:
-    -   id: rst-inline-touching-normal
-    -   id: rst-directive-colons
-    -   id: rst-backticks
-    -   id: python-no-log-warn
-    -   id: python-no-eval
-    -   id: python-check-mock-methods
-    -   id: python-check-blanket-noqa
+- repo: https://github.com/d9pouces/mybestpractices
+  rev: 0.3.8
+  hooks:
+  - id: mybestpractices-git-autotag
+    args: [--only-branch, 'dev,master']
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.5.0
+  hooks:
+  - id: check-added-large-files
+  - id: check-ast
+  - id: check-case-conflict
+  - id: check-executables-have-shebangs
+  - id: check-json
+  - id: check-merge-conflict
+  - id: check-toml
+  - id: check-yaml
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.7.3
+  hooks:
+  - id: ruff
+    exclude: ^(npm/node_modules/.*)
+  - id: ruff-format
+    exclude: ^(npm/node_modules/.*)
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.14.0
+  hooks:
+  - id: pretty-format-ini
+    args: [--autofix]
+    exclude: ^(npm/node_modules/.*)
+  - id: pretty-format-toml
+    args: [--autofix]
+    exclude: ^(npm/node_modules/.*)
+  - id: pretty-format-yaml
+    args: [--autofix]
+    exclude: ^(npm/node_modules/.*)
+- repo: https://github.com/pre-commit/pygrep-hooks
+  rev: v1.10.0
+  hooks:
+  - id: rst-inline-touching-normal
+  - id: rst-directive-colons
+  - id: rst-backticks
+  - id: python-no-log-warn
+  - id: python-no-eval
+  - id: python-check-mock-methods
+  - id: python-check-blanket-noqa
 default_language_version:
-    python: python3.8
+  python: python3.12
