@@ -18,6 +18,7 @@ from urllib.parse import quote_plus
 
 from django.conf import settings
 from django.contrib.sessions.backends.base import VALID_KEY_CHARS
+from django.core.exceptions import DisallowedHost
 from django.http import HttpRequest, HttpResponse
 from django.utils.crypto import get_random_string
 from django.utils.deprecation import MiddlewareMixin
@@ -50,21 +51,12 @@ class WebsocketMiddleware(MiddlewareMixin):
             return response
         # noinspection PyUnresolvedReferences
         window_key = request.window_key
-        use_ssl = request.scheme.endswith("s")
-        if hasattr(settings, "SERVER_NAME") and hasattr(settings, "SERVER_PORT"):
-            host = getattr(settings, "SERVER_NAME")
-            port = getattr(settings, "SERVER_PORT")
-        else:
-            host, port = None, None
-        ws_url = ws_settings.WEBSOCKET_URL
-        if host and port:
-            if use_ssl:
-                ws_url = f"wss://{host}:{port}{ws_url}"
-            else:
-                ws_url = f"ws://{host}:{port}{ws_url}"
-        else:
-            http_url = request.build_absolute_uri(ws_url)
-            ws_url = "ws%s" % (http_url[4:])
+        netloc = request.get_host()
+        use_ssl = request.is_secure()
+        scheme = "ws"
+        if use_ssl:
+            scheme = "wss"
+        ws_url = f"{scheme}://{netloc}{ws_settings.WEBSOCKET_URL}"
         kwargs = {
             "max_age": 86400,
             "domain": settings.CSRF_COOKIE_DOMAIN,
