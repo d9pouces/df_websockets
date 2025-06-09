@@ -50,7 +50,7 @@ name = "df_websockets"
 packages = [{include = "df_websockets"}]
 readme = "README.md"
 repository = 'https://github.com/d9pouces/df_websockets'
-version = "1.2.1"
+version = "1.2.2"
 
 [tool.poetry.dependencies]
 channels-redis = "^4.2.1"

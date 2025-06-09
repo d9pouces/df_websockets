@@ -14,6 +14,9 @@
 #                                                                              #
 # ##############################################################################
 """Define the web ASGI application."""
+import django
+
+django.setup()
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 
