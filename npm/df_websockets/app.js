@@ -40,6 +40,8 @@
 
     function websocketConnect() {
         const cookieName = "dfwsurl";
+        const heartbeatMsg = '--heartbeat--';
+        const heartbeatDelay = 5000;
         if (window.DFSignals.wsurl === null) {
             const dfWsURL = getCookie(cookieName);
             window.DFSignals.wsurl = decodeURIComponent(dfWsURL);
@@ -52,14 +54,27 @@
         /* cannot use header or cookies (cookies may change after the initial connection)
         *  so we use GET parameter
         *  */
+        connection.heartbeatInterval = null;
         connection.onopen = () => {
             window.DFSignals.connection = connection;
             for (let i = 0; i < window.DFSignals.buffer.length; i++) {
                 connection.send(window.DFSignals.buffer[i]);
             }
+            connection.heartbeatInterval = setInterval(connection.sendHeartbeat, heartbeatDelay);
             window.DFSignals.buffer = [];
         };
+        connection.sendHeartbeat = () => {
+            try {
+                connection.send(heartbeatMsg);
+            } catch (e) {
+                console.warn("Unable to send heartbeat, reason: " + e.message);
+            }
+        };
         connection.onmessage = (e) => {
+            if (e.data === heartbeatMsg) {
+                console.debug('heartbeat received')
+                return;
+            }
             console.debug('received call ' + e.data + ' from server.')
             const msg = JSON.parse(e.data);
             // noinspection JSUnresolvedVariable
@@ -70,8 +85,12 @@
         connection.onerror = (e) => {
             console.error("WS error: " + e);
         };
-        connection.onclose = () => {
+        connection.onclose = (event) => {
             window.DFSignals.connection = null;
+            if (connection.heartbeatInterval !== null) {
+                clearInterval(connection.heartbeatInterval);
+            }
+            console.debug("WebSocket connection closed: " + event.code + " " + event.reason);
             setTimeout(websocketConnect, 3000);
         }
         addEventListener("beforeunload", () => {

@@ -29,6 +29,7 @@ classifiers = [
   'Framework :: Django :: 4.2',
   'Framework :: Django :: 5.0',
   'Framework :: Django :: 5.1',
+  'Framework :: Django :: 5.2',
   'License :: OSI Approved :: CEA CNRS Inria Logiciel Libre License, version 2.1 (CeCILL-2.1)',
   'Operating System :: MacOS :: MacOS X',
   'Operating System :: Microsoft :: Windows',
@@ -50,7 +51,7 @@ name = "df_websockets"
 packages = [{include = "df_websockets"}]
 readme = "README.md"
 repository = 'https://github.com/d9pouces/df_websockets'
-version = "1.2.2"
+version = "1.2.4"
 
 [tool.poetry.dependencies]
 channels-redis = "^4.2.1"

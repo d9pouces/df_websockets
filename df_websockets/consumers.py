@@ -18,7 +18,6 @@
 import json
 import logging
 from functools import lru_cache
-from typing import Optional, Union
 
 from asgiref.compatibility import guarantee_single_callable
 from asgiref.sync import async_to_sync
@@ -36,13 +35,15 @@ from df_websockets.constants import WEBSOCKET_KEY_COOKIE_NAME
 from df_websockets.utils import valid_topic_name
 from df_websockets.window_info import WindowInfo
 
+HEARTBEAT_MESSAGE = '--heartbeat--'
+
 logger = logging.getLogger(__name__)
 _signal_encoder = import_string(ws_settings.WEBSOCKET_SIGNAL_ENCODER)
 topic_serializer = import_string(ws_settings.WEBSOCKET_TOPIC_SERIALIZER)
 signal_decoder = import_string(ws_settings.WEBSOCKET_SIGNAL_DECODER)
 
 
-def get_websocket_topics(request: Union[HttpRequest, WindowInfo]):
+def get_websocket_topics(request: HttpRequest | WindowInfo):
     """Return the topics to which the websocket is bound."""
     if not hasattr(request, "window_key"):
         return []
@@ -80,7 +81,7 @@ class DFConsumer(WebsocketConsumer):
     def __init__(self, *args, **kwargs):
         """Create a new DFConsumer for this websocket connection."""
         super().__init__(*args, **kwargs)
-        self.window_info: Optional[WindowInfo] = None
+        self.window_info: WindowInfo | None = None
         self.topics = []
 
     def connect(self):
@@ -155,6 +156,10 @@ class DFConsumer(WebsocketConsumer):
     # Receive message from WebSocket
     def receive(self, text_data=None, bytes_data=None):
         """Receive a message from the WebSocket and trigger a background task."""
+        if text_data == HEARTBEAT_MESSAGE:
+            logger.debug("heartbeat received")
+            self.send(text_data=text_data)
+            return
         try:
             msg = json.loads(text_data)
             logger.debug('WS message received "%s"', text_data)
