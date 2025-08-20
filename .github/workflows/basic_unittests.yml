@@ -11,8 +11,8 @@ jobs:
     strategy:
       matrix:
         channels-version: [3.0.5, 4.0.0, 4.1.0, 4.2.0]
-        django-version: ['3.2', '4.0', '4.1', '4.2', '5.0', '5.1']
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        django-version: ['3.2', '4.0', '4.1', '4.2', '5.0', '5.1', '5.2']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
         exclude:
         - channels-version: 4.1.0
           django-version: '3.2'
