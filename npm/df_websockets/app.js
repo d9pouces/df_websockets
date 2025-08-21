@@ -41,7 +41,7 @@
     function websocketConnect() {
         const cookieName = "dfwsurl";
         const heartbeatMsg = '--heartbeat--';
-        const heartbeatDelay = 5000;
+        const heartbeatDelay = 60000;
         if (window.DFSignals.wsurl === null) {
             const dfWsURL = getCookie(cookieName);
             window.DFSignals.wsurl = decodeURIComponent(dfWsURL);
