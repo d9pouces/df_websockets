@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        channels-version: [3.0.5, 4.0.0, 4.1.0, 4.2.0]
+        channels-version: [3.0.5, 4.0.0, 4.1.0, 4.2.2, 4.3.2]
         django-version: ['3.2', '4.0', '4.1', '4.2', '5.0', '5.1', '5.2', '6.0', '6.1']
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
         exclude:
@@ -21,11 +21,17 @@ jobs:
           django-version: '4.0'
         - channels-version: 4.1.0
           django-version: '4.1'
-        - channels-version: 4.2.0
+        - channels-version: 4.2.2
           django-version: '3.2'
-        - channels-version: 4.2.0
+        - channels-version: 4.2.2
           django-version: '4.0'
-        - channels-version: 4.2.0
+        - channels-version: 4.2.2
+          django-version: '4.1'
+        - channels-version: 4.3.2
+          django-version: '3.2'
+        - channels-version: 4.3.2
+          django-version: '4.0'
+        - channels-version: 4.3.2
           django-version: '4.1'
 
         - django-version: '6.1'
