@@ -31,30 +31,18 @@ def get_project_module_name():
     if hasattr(settings, "DF_MODULE_NAME"):
         module_name = settings.DF_MODULE_NAME
     return module_name
-
-
 def get_celery_settings():
     try:
         # noinspection PyProtectedMember,PyPackageRequirements
         from celery.app.defaults import _TO_NEW_KEY
-    except ImportError:
-        _TO_NEW_KEY = None
-
-    if _TO_NEW_KEY:
-        # compatibility with the incoming Celery 6 and avoid warning in Celery 5
-
-        class CelerySetting:
-            pass
-
-        celery_settings = CelerySetting()
         for old_setting, new_setting in _TO_NEW_KEY.items():
             if hasattr(settings, old_setting):
-                setattr(celery_settings, new_setting, getattr(settings, old_setting))
-            elif hasattr(settings, new_setting):
-                setattr(celery_settings, new_setting, getattr(settings, new_setting))
-    else:
-        celery_settings = settings
-    return celery_settings
+                setattr(settings, new_setting, getattr(settings, old_setting))
+                delattr(settings, old_setting)
+
+    except ImportError:
+        _TO_NEW_KEY = None
+    return settings
 
 
 # noinspection PyUnusedLocal
