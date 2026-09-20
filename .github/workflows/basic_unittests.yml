@@ -11,8 +11,8 @@ jobs:
     strategy:
       matrix:
         channels-version: [3.0.5, 4.0.0, 4.1.0, 4.2.0]
-        django-version: ['3.2', '4.0', '4.1', '4.2', '5.0', '5.1', '5.2']
-        python-version: ['3.10', '3.11', '3.12', '3.13']
+        django-version: ['3.2', '4.0', '4.1', '4.2', '5.0', '5.1', '5.2', '6.0', '6.1', '6.2']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
         exclude:
         - channels-version: 4.1.0
           django-version: '3.2'
@@ -42,6 +42,10 @@ jobs:
           python-version: '3.13'
         - channels-version: 3.0.5
           python-version: '3.13'
+        - django-version: '3.2'
+          python-version: '3.14'
+        - channels-version: 3.0.5
+          python-version: '3.14'
     steps:
     - uses: actions/checkout@v4.2.2
     - uses: actions/setup-python@v5.3.0
