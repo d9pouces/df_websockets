@@ -7,7 +7,7 @@ repos:
   - id: mybestpractices-git-autotag
     args: [--only-branch, 'dev,master']
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.5.0
+  rev: v6.0.0
   hooks:
   - id: check-added-large-files
   - id: check-ast
@@ -18,14 +18,14 @@ repos:
   - id: check-toml
   - id: check-yaml
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.7.3
+  rev: v0.16.8
   hooks:
   - id: ruff
     exclude: ^(npm/node_modules/.*)
   - id: ruff-format
     exclude: ^(npm/node_modules/.*)
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.14.0
+  rev: v2.16.0
   hooks:
   - id: pretty-format-ini
     args: [--autofix]
