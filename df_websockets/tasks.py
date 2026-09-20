@@ -143,13 +143,13 @@ def trigger(window_info, signal_name, to=None, **kwargs):
 
 # noinspection PyIncorrectDocstring
 def trigger_signal(
-    window_info,
-    signal_name,
-    to=None,
-    kwargs=None,
-    countdown=None,
-    expires=None,
-    eta=None,
+        window_info,
+        signal_name,
+        to=None,
+        kwargs=None,
+        countdown=None,
+        expires=None,
+        eta=None,
 ):
     """Call a df_websockets signal.
 
@@ -177,14 +177,14 @@ def trigger_signal(
 
 
 def _trigger_signal(
-    window_info,
-    signal_name,
-    to=None,
-    kwargs=None,
-    countdown=None,
-    expires=None,
-    eta=None,
-    from_client=False,
+        window_info,
+        signal_name,
+        to=None,
+        kwargs=None,
+        countdown=None,
+        expires=None,
+        eta=None,
+        from_client=False,
 ):
     return async_to_sync(_trigger_signal_async)(
         window_info,
@@ -199,14 +199,14 @@ def _trigger_signal(
 
 
 async def _trigger_signal_async(
-    window_info,
-    signal_name,
-    to=None,
-    kwargs=None,
-    countdown=None,
-    expires=None,
-    eta=None,
-    from_client=False,
+        window_info,
+        signal_name,
+        to=None,
+        kwargs=None,
+        countdown=None,
+        expires=None,
+        eta=None,
+        from_client=False,
 ):
     """actually calls a DF signal, dispatching them to their destination:
 
@@ -339,14 +339,14 @@ def call_task(worker_mode, queue, signal_args, celery_options):
 
 
 def process_task(
-    signal_name,
-    window_info_dict,
-    kwargs=None,
-    from_client=False,
-    serialized_client_topics=None,
-    to_server=False,
-    queue=None,
-    celery_request=None,
+        signal_name,
+        window_info_dict,
+        kwargs=None,
+        from_client=False,
+        serialized_client_topics=None,
+        to_server=False,
+        queue=None,
+        celery_request=None,
 ):
     logger.info(
         'Signal "%s" called on queue "%s" to topics %s (from client?: %s, to server?: %s)',
@@ -373,8 +373,8 @@ def process_task(
         for connection in REGISTERED_SIGNALS[signal_name]:
             assert isinstance(connection, SignalConnection)
             if connection.get_queue(window_info, kwargs) != queue or (
-                from_client
-                and not connection.is_allowed_to(connection, window_info, kwargs)
+                    from_client
+                    and not connection.is_allowed_to(connection, window_info, kwargs)
             ):
                 continue
             new_kwargs = connection.check(kwargs)
@@ -386,7 +386,7 @@ def process_task(
 
 
 async def _call_ws_signal(
-    signal_name: str, signal_id, serialized_topics: List[str], kwargs
+        signal_name: str, signal_id, serialized_topics: List[str], kwargs
 ):
     if isinstance(serialized_topics, str):
         serialized_topics = [serialized_topics]
@@ -416,7 +416,7 @@ def import_signals_and_functions():
             import_module(module)
         except ImportError as e:
             if package_dir and os.path.isfile(
-                os.path.join(package_dir, "%s.py" % module_name)
+                    os.path.join(package_dir, "%s.py" % module_name)
             ):
                 logger.exception(e)
         except Exception as e:
@@ -431,8 +431,8 @@ def import_signals_and_functions():
         app = app_config.name
         package_dir = app_config.path
         for module_name in (
-            "signals",
-            "forms",
+                "signals",
+                "forms",
         ):
             if os.path.isfile(os.path.join(package_dir, "%s.py" % module_name)):
                 try_import("%s.%s" % (app, module_name))
@@ -460,17 +460,16 @@ def get_expected_queues():
 
 
 if celery_shared_task is not None:
-
     @celery_shared_task(serializer="json", bind=True)
     def _server_signal_call(
-        self,
-        signal_name,
-        window_info_dict,
-        kwargs=None,
-        from_client=False,
-        serialized_client_topics=None,
-        to_server=False,
-        queue=None,
+            self,
+            signal_name,
+            window_info_dict,
+            kwargs=None,
+            from_client=False,
+            serialized_client_topics=None,
+            to_server=False,
+            queue=None,
     ):
         return process_task(
             signal_name,
