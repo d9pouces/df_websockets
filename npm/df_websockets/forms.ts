@@ -33,8 +33,9 @@ export function serializeForm(form: HTMLFormElement) {
             continue;
         }
         if (field.type === "file") {  // just returns the name of selected files
-            for (let n = 0; n < (<HTMLInputElement>field).files.length; n++) {
-                serialized.push({name: field.name, value: (<HTMLInputElement>field).files[n].name});
+            const files = (<HTMLInputElement>field).files;
+            for (let n = 0; files && n < files.length; n++) {
+                serialized.push({name: field.name, value: files[n].name});
             }
         } else if (field.type === 'select-multiple') { // get all selected options
             for (let n = 0; n < (<HTMLSelectElement>field).selectedOptions.length; n++) {
@@ -107,7 +108,7 @@ export function htmlFormsSet(opts: formValueList) {
     }
 
 
-    document.querySelectorAll(opts.selector).forEach(
+    document.querySelectorAll<HTMLFormElement>(opts.selector).forEach(
         (form: HTMLFormElement) => {
             opts.values.forEach(
                 (values) => {
@@ -188,9 +189,13 @@ interface Signal {
         if (!(<HTMLElement>evt.target).querySelectorAll) {
             return;
         }
-        (<HTMLElement>evt.target).querySelectorAll("[data-df-signal]").forEach(
+        (<HTMLElement>evt.target).querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLFormElement>("[data-df-signal]").forEach(
             (target: HTMLInputElement | HTMLSelectElement | HTMLFormElement) => {
-                const signals = <Array<Signal>>JSON.parse(target.getAttribute("data-df-signal"));
+                const signalsAttr = target.getAttribute("data-df-signal");
+                if (!signalsAttr) {
+                    return;
+                }
+                const signals = <Array<Signal>>JSON.parse(signalsAttr);
                 signals.forEach((signal: Signal) => {
                     let eventName = signal.on;
                     if (!eventName) {
@@ -213,8 +218,9 @@ interface Signal {
 
                             if (target.type === "file") {  // just returns the name of selected files
                                 opts[signal.value] = [];
-                                for (let n = 0; n < (<HTMLInputElement>target).files.length; n++) {
-                                    opts[signal.value].push((<HTMLInputElement>target).files[n].name);
+                                const files = (<HTMLInputElement>target).files;
+                                for (let n = 0; files && n < files.length; n++) {
+                                    opts[signal.value].push(files[n].name);
                                 }
                             } else if (target.type === 'select-multiple') { // get all selected options
                                 opts[signal.value] = [];
