@@ -15,11 +15,11 @@
 # ##############################################################################
 
 [build-system]
-build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core"]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
 
-[tool.poetry]
-authors = ["Matthieu Gallet <github@19pouces.net>"]
+[project]
+authors = [{name = "Matthieu Gallet", email = "github@19pouces.net"}]
 classifiers = [
   'Development Status :: 5 - Production/Stable',
   'Framework :: Django :: 3.1',
@@ -43,27 +43,33 @@ classifiers = [
   'Programming Language :: Python :: 3.13',
   'Programming Language :: Python :: 3.14'
 ]
+dependencies = [
+  "channels-redis>=4.2.1,<5",
+  "django>=2.2"
+]
 description = "Websocket integration for Django"
-documentation = 'https://github.com/d9pouces/df_websockets'
 license = "CECILL-B"
-maintainers = ["Matthieu Gallet <github@19pouces.net>"]
+maintainers = [{name = "Matthieu Gallet", email = "github@19pouces.net"}]
 name = "df_websockets"
-packages = [{include = "df_websockets"}]
 readme = "README.md"
-repository = 'https://github.com/d9pouces/df_websockets'
-version = "1.2.5"
+requires-python = ">=3.9"
+version = "1.2.6"
 
-[tool.poetry.dependencies]
-channels-redis = "^4.2.1"
-django = ">=2.2"
-python = ">=3.9"
+[project.urls]
+Documentation = 'https://github.com/d9pouces/df_websockets'
+Repository = 'https://github.com/d9pouces/df_websockets'
 
-[tool.poetry.group.dev.dependencies]
-celery = "^5.4.0"
-coverage = "^7.6.4"
-daphne = "^4.1.2"
-pytest-django = "^4.9.0"
-tox = ">=4.4.12"
+[dependency-groups]
+dev = [
+  "celery>=5.4.0,<6",
+  "coverage>=7.6.4,<8",
+  "daphne>=4.1.2,<5",
+  "pytest-django>=4.9.0,<5",
+  "tox>=4.4.12"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["df_websockets"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "demo_df_websockets.settings"
